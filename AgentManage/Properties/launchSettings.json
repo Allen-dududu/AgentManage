@@ -26,7 +26,7 @@
         "Issure": "Bitbits.Inc",
         "Audience": "LolipopClient",
         "SecurityKey": "4C6A8A8B-1B9F-12E7-60C4-123BC0BB5D25",
-        "Context": "Host=localhost;Port=5432;database=postgres;User Id=postgres;Password=postgres;"
+        "Context": "Host=localhost;Port=5432;database=postgres;User Id=postgres;Password=root;"
       },
 
       "applicationUrl": "http://localhost:8080"
