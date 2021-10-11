@@ -32,3 +32,8 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+/AgentManage/obj/Container/*.cache
+/AgentManage/obj/Debug/netcoreapp3.1/*.cache
+/DataBase.EF/obj/Debug/netcoreapp3.1/*.cache
+/AgentManage/.vs/AgentManage/v16/*.suo
+/AgentManage/obj/Container/*.cache
