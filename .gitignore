@@ -1,0 +1,6 @@
+
+/.dll
+/AgentManage/bin/*
+/AgentManage/obj/*
+/DataBase.EF/bin/*
+/DataBase.EF/obj/*
