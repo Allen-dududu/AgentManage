@@ -1,9 +1,0 @@
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\bin\Debug\netcoreapp3.1\DataBase.EF.deps.json
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\bin\Debug\netcoreapp3.1\DataBase.EF.dll
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\bin\Debug\netcoreapp3.1\DataBase.EF.pdb
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\obj\Debug\netcoreapp3.1\DataBase.EF.csprojAssemblyReference.cache
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\obj\Debug\netcoreapp3.1\DataBase.EF.AssemblyInfoInputs.cache
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\obj\Debug\netcoreapp3.1\DataBase.EF.AssemblyInfo.cs
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\obj\Debug\netcoreapp3.1\DataBase.EF.csproj.CoreCompileInputs.cache
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\obj\Debug\netcoreapp3.1\DataBase.EF.dll
-C:\Users\allen\Desktop\AgentManage\DataBase.EF\obj\Debug\netcoreapp3.1\DataBase.EF.pdb

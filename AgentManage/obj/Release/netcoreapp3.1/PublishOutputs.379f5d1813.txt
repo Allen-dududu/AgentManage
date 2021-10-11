@@ -1,7 +1,0 @@
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\AgentManage.exe
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\appsettings.Development.json
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\appsettings.json
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\AgentManage.dll
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\AgentManage.deps.json
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\AgentManage.runtimeconfig.json
-C:\Users\allen\Desktop\AgentManage\AgentManage\obj\Docker\publish\AgentManage.pdb
