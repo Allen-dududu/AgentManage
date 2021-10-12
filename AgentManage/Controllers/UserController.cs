@@ -41,20 +41,44 @@ namespace AgentManage.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] User value)
         {
-            var exist = _context.Employees.Where(i => i.Phone == value.Phone).FirstOrDefault();
+            var exist = _context.Employees.Where(i => i.Phone == value.Phone && i.Status == 0).FirstOrDefault();
             if (exist != null)
             {
                 return BadRequest(new { message = "账号已存在" });
             }
-            var employee = new Employee()
+            var employee = new Employee();
+            employee.Status = 0;
+            employee.Name = value.Name;
+            employee.PassWord = value.PassWord;
+            employee.Phone = value.Phone;
+            employee.Pid = value.Pid;
+
+            // 总监
+            if (value.Pid == 0)
             {
-                Name = value.Name,
-                PassWord = value.PassWord,
-                Role = value.Role,
-                Phone = value.Phone,
-                Pid = value.Pid,
-                Status = 0
-            };
+                employee.Role = Role.Administrator;
+            }
+            else
+            {
+                var father = _context.Employees.Where(i => i.Id == value.Pid && i.Status == 0).FirstOrDefault();
+                if(father == null)
+                {
+                    return BadRequest(new { message = "领导不存在" });
+                }
+                else
+                {
+                    if (father.Role == Role.Administrator)
+                    {
+                        employee.Role = Role.Manager;
+                    }
+                    else
+                    {
+                        employee.Role = Role.Agent;
+                    }
+                }
+            }
+
+
             _context.Employees.Add(employee);
             _context.SaveChanges();
             return Ok(_context.Employees.Where(i => i.Phone == value.Phone).FirstOrDefault());
