@@ -101,5 +101,41 @@ namespace AgentManage.Controllers
             }
 
         }
+        [HttpGet("rolesTree")]
+        public IActionResult RolesTree()
+        {
+            var users = _context.Employees.Where(i => i.Status == 0).ToList();
+            var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Name = i.Name, Role = i.Role });
+
+            foreach (var a in admin)
+            {
+                BuildRoleTree(users, a);
+            }
+            return Ok(admin);
+
+        }
+        private class Node
+        {
+            public string Name { get; set; }
+
+            public int Id { get; set; }
+
+            public string Role { get; set; }
+
+            public List<Node> Children { get; set; }
+        }
+        private void BuildRoleTree(IEnumerable<Employee> users, Node head)
+        {
+            var children = users.Where(i => i.Pid == head.Id);
+            if (children != null)
+            {
+                var c = children.Select(i => new Node { Id = i.Id, Name = i.Name, Role = i.Role });
+                head.Children = c.ToList();
+            }
+            else
+            {
+                return;
+            }
+        }
     }
 }
