@@ -130,7 +130,7 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> RolesTreeAsync()
         {
             var users = await _context.Employees.Where(i => i.Status == 0).ToListAsync();
-            var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Name = i.Name, Role = i.Role }).ToList();
+            var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Title = i.Name, Role = i.Role }).ToList();
 
             for(int i= 0;i<admin.Count(); i++)
             {
@@ -141,7 +141,7 @@ namespace AgentManage.Controllers
         }
         private class Node
         {
-            public string Name { get; set; }
+            public string Title { get; set; }
 
             public int Id { get; set; }
 
@@ -154,7 +154,7 @@ namespace AgentManage.Controllers
             var children = users.Where(i => i.Pid == head.Id);
             if (children != null)
             {
-                var c = children.Select(i => new Node { Id = i.Id, Name = i.Name, Role = i.Role });
+                var c = children.Select(i => new Node { Id = i.Id, Title = i.Name, Role = i.Role });
                 head.Children = c.ToList();
             }
             else
