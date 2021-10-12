@@ -147,6 +147,8 @@ namespace AgentManage.Controllers
 
             public string Role { get; set; }
 
+            public bool Expand { get => true; }
+
             public List<Node> Children { get; set; }
         }
         private void BuildRoleTree(IEnumerable<Employee> users, Node head)

@@ -1,0 +1,9 @@
+CREATE TABLE "AgentManage".Employee(
+   Id SERIAL PRIMARY KEY   NOT NULL,
+   Name           TEXT    NOT NULL,
+   Phone            TEXT     NOT NULL,
+   PassWord       text  NOT NULL,
+   Role         text NOT null,
+   Status       int  NOT null,
+   Pid          int
+)
