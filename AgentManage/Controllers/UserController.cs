@@ -2,6 +2,7 @@
 using DataBase.EF;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,9 +25,9 @@ namespace AgentManage.Controllers
         // GET: api/<UserController>
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> GetAsync()
         {
-            return Ok(_context.Employees.Where(i => i.Status == 0).ToList());
+            return Ok(await _context.Employees.Where(i => i.Status == 0).ToListAsync());
         }
 
         // GET api/<UserController>/5
@@ -61,9 +62,9 @@ namespace AgentManage.Controllers
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] User value)
+        public async Task<IActionResult> PutAsync(int id, [FromBody] User value)
         {
-            var e = _context.Employees.Where(i => i.Id == id).FirstOrDefault();
+            var e = await _context.Employees.Where(i => i.Id == id).FirstOrDefaultAsync();
             if (e != null)
             {
                 e.Name = value.Name;
@@ -83,10 +84,10 @@ namespace AgentManage.Controllers
 
         // DELETE api/<UserController>/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> DeleteAsync(int id)
         {
 
-            var e = _context.Employees.Where(i => i.Id == id).FirstOrDefault();
+            var e = await _context.Employees.Where(i => i.Id == id).FirstOrDefaultAsync();
             if (e != null)
             {
                 e.Status = 1;
@@ -102,14 +103,14 @@ namespace AgentManage.Controllers
 
         }
         [HttpGet("rolesTree")]
-        public IActionResult RolesTree()
+        public async Task<IActionResult> RolesTreeAsync()
         {
-            var users = _context.Employees.Where(i => i.Status == 0).ToList();
-            var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Name = i.Name, Role = i.Role });
+            var users = await _context.Employees.Where(i => i.Status == 0).ToListAsync();
+            var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Name = i.Name, Role = i.Role }).ToList();
 
-            foreach (var a in admin)
+            for(int i= 0;i<admin.Count(); i++)
             {
-                BuildRoleTree(users, a);
+                BuildRoleTree(users, admin[i]);
             }
             return Ok(admin);
 
