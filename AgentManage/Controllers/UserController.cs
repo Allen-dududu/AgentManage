@@ -24,16 +24,16 @@ namespace AgentManage.Controllers
         // GET: api/<UserController>
 
         [HttpGet]
-        public IEnumerable<Employee> Get()
+        public IActionResult Get()
         {
-            return _context.Employees.Where(i => i.Status == 0).ToList();
+            return Ok(_context.Employees.Where(i => i.Status == 0).ToList());
         }
 
         // GET api/<UserController>/5
         [HttpGet("{id}")]
-        public Employee Get(int id)
+        public IActionResult Get(int id)
         {
-            return _context.Employees.Where(i => i.Id == id).FirstOrDefault();
+            return Ok(_context.Employees.Where(i => i.Id == id).FirstOrDefault());
         }
 
         // POST api/<UserController>
@@ -56,12 +56,12 @@ namespace AgentManage.Controllers
             };
             _context.Employees.Add(employee);
             _context.SaveChanges();
-            return Ok();
+            return Ok(_context.Employees.Where(i => i.Phone == value.Phone).FirstOrDefault());
         }
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] User value)
+        public IActionResult Put(int id, [FromBody] User value)
         {
             var e = _context.Employees.Where(i => i.Id == id).FirstOrDefault();
             if (e != null)
@@ -73,12 +73,17 @@ namespace AgentManage.Controllers
                 e.Pid = value.Pid;
                 e.Status = value.Status;
                 _context.SaveChanges();
+                return Ok(_context.Employees.Where(i => i.Id == id).FirstOrDefault());
+            }
+            else
+            {
+                return NotFound(new { message = "未找到此用户" });
             }
         }
 
         // DELETE api/<UserController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
 
             var e = _context.Employees.Where(i => i.Id == id).FirstOrDefault();
@@ -86,7 +91,15 @@ namespace AgentManage.Controllers
             {
                 e.Status = 1;
                 _context.SaveChanges();
+                return Ok(new { message = "删除成功" });
+
             }
+            else
+            {
+                return NotFound(new { message = "未找到此用户" });
+
+            }
+
         }
     }
 }
