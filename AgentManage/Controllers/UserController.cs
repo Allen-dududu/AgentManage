@@ -41,14 +41,14 @@ namespace AgentManage.Controllers
         public IActionResult Post([FromBody] User value)
         {
             var exist = _context.Employees.Where(i => i.Phone == value.Phone).FirstOrDefault();
-            if(exist != null)
+            if (exist != null)
             {
                 return BadRequest(new { message = "账号已存在" });
             }
             var employee = new Employee()
             {
                 Name = value.Name,
-                PassWord = value.Name,
+                PassWord = value.PassWord,
                 Role = value.Role,
                 Phone = value.Phone,
                 Pid = value.Pid,
@@ -82,7 +82,7 @@ namespace AgentManage.Controllers
         {
 
             var e = _context.Employees.Where(i => i.Id == id).FirstOrDefault();
-            if(e != null)
+            if (e != null)
             {
                 e.Status = 1;
                 _context.SaveChanges();
