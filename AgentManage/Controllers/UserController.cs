@@ -26,7 +26,7 @@ namespace AgentManage.Controllers
         [HttpGet]
         public IEnumerable<Employee> Get()
         {
-            return _context.Employees.ToList();
+            return _context.Employees.Where(i => i.Status == 0).ToList();
         }
 
         // GET api/<UserController>/5
