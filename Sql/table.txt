@@ -7,3 +7,32 @@ CREATE TABLE "AgentManage".Employee(
    Status       int  NOT null,
    Pid          int
 )
+
+
+CREATE TABLE "AgentManage".Customer(
+	"Id" SERIAL PRIMARY KEY   NOT NULL,
+   "CustomerId" uuid   NOT NULL,
+   "BusinessLicense"           TEXT    NOT NULL,
+   "ContactDetail"           Text NOT NULL,
+   "Type"       text  NOT NULL,
+   "EmployeeId"        int NOT null,
+   "CreateTime"       timestamp   NOT null,
+   "UpdateTime"       timestamp   NOT null,
+   "IsOld"          boolean not null,
+   "Informant" text ,
+   "Reviewing" boolean
+)
+
+CREATE TABLE "AgentManage".Contract(
+
+   "Id" SERIAL PRIMARY KEY   NOT NULL,
+   "DealTime"  timestamp NOT NULL,
+   "DealAmount" money NOT NULL,
+   "Remark"  text,
+   "ContractName" text NOT NULL,
+   "ContractFile" text ,
+   "DealDuration" int,
+   "AfterSale" text,
+   "EmployeeId" int NOT NULL,
+   "CustomerId" uuid  NOT NULL
+)

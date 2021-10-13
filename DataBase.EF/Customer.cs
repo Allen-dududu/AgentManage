@@ -7,10 +7,11 @@ namespace DataBase.EF
     public class Customer
     {
         public int Id { get; set; }
+        public Guid CustomerId { get; set; }
 
         public string BusinessLicense { get; set; }
 
-        public string ConnectDetail { get; set; }
+        public string ContactDetail { get; set; }
         public string Type { get; set; }
         public int EmployeeId { get; set; }
         public DateTime CreateTime { get; set; }

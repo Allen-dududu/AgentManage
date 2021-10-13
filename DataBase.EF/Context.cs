@@ -24,7 +24,7 @@ namespace DataBase.EF
             modelBuilder.Entity<Contract>().ToTable("contract", "AgentManage");
             modelBuilder.Entity<Customer>().ToTable("customer", "AgentManage");
 
-            modelBuilder.Entity<Customer>().HasMany(x => x.Contracts).WithOne().HasForeignKey(x => x.CustomerId);
+            modelBuilder.Entity<Customer>().HasMany(n => n.Contracts).WithOne().HasPrincipalKey(p => p.CustomerId);
 
         }
     }

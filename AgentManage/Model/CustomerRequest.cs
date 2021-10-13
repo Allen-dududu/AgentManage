@@ -11,15 +11,15 @@ namespace AgentManage.Model
         [Required]
         public string BusinessLicense { get; set; }
         [Required]
-        public string ConnectDetail { get; set; }
+        public string ContactDetail { get; set; }
 
         [Required]
         [CustomerType]
         public string Type { get; set; }
-        [Required]
+        //[Required]
 
-        public int EmployeeId { get; set; }
+        //public int EmployeeId { get; set; }
 
-        public string Informant { get; set; }
+        //public string Informant { get; set; }
     }
 }

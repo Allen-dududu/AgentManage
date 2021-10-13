@@ -15,7 +15,7 @@ namespace DataBase.EF
         public int DealDuration { get; set; }
         public string AfterSale { get; set; }
         public int EmployeeId { get; set; }
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
 
 
     }

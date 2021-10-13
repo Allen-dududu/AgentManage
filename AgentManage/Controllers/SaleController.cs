@@ -1,5 +1,6 @@
 ﻿using AgentManage.Model;
 using DataBase.EF;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 namespace AgentManage.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class SaleController : ControllerBase
     {
@@ -26,24 +28,25 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> GetAsync()
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
-
+            var customers = _context.Customer.Where(i => i.IsOld == false);
             if (user != null)
             {
                 if (user.Role == Role.Administrator)
                 {
-                    return Ok(await _context.Customer.Where(i => i.IsOld == false).OrderBy(i => i.UpdateTime).ToListAsync());
                 }
                 else if (user.Role == Role.Manager)
                 {
-                    var customers = _context.Customer.Where(i => i.IsOld == false);
                     var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
-
-                    return Ok(await customers.Where(i => children.Contains(i.EmployeeId)).OrderBy(i => i.UpdateTime).ToListAsync());
+                    customers = customers.Where(i => children.Contains(i.EmployeeId));
                 }
                 else
                 {
-                    return Ok(await _context.Customer.Where(i => i.IsOld == false && i.EmployeeId == user.Id).OrderBy(i => i.UpdateTime).ToListAsync());
+                    customers = customers.Where( i => i.EmployeeId == user.Id);
                 }
+
+
+                return Ok(customers.ToList().OrderByDescending(i => i.Id));
+
             }
             return BadRequest(new { message = "当前用户没找到" });
         }
@@ -64,34 +67,74 @@ namespace AgentManage.Controllers
             openCustomer.AddRange(customersB);
             openCustomer.AddRange(customersC);
 
-            return Ok(openCustomer);
+            return Ok(openCustomer.OrderByDescending(i => i.UpdateTime));
         }
         [HttpPost("Customer/Open")]
-        public async Task<IActionResult> AssignOpenAsync(int customerId)
+        public async Task<IActionResult> AssignOpenAsync(Open value)
         {
+            if (value.CustomerType != CustomerType.A && value.CustomerType != CustomerType.B && value.CustomerType != CustomerType.C)
+            {
+                return  BadRequest(new { message = "客户类型不正确." });
+            }
+            if (!CustomerAssignCheckNumber(value.CustomerType))
+            {
+                return BadRequest(new { message = "客户数量超出限制" });
+            }
+
             var user = await _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefaultAsync();
-            var customer = await _context.Customer.Where(i => i.Id == customerId).FirstOrDefaultAsync();
+            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId).OrderByDescending(i => i.Id).FirstOrDefaultAsync();
 
             customer.IsOld = true;
+            customer.UpdateTime = DateTime.Now;
+            _context.Customer.Update(customer);
+            _context.SaveChanges();
+            _context.Entry(customer).State = EntityState.Detached;
+
 
             var newCustomer = new Customer();
-            newCustomer = customer;
+            newCustomer.CustomerId = customer.CustomerId;
+            newCustomer.BusinessLicense = customer.BusinessLicense;
+            newCustomer.ContactDetail = customer.ContactDetail;
+            newCustomer.CreateTime = DateTime.Now;
+            newCustomer.UpdateTime = DateTime.Now;
+            newCustomer.IsOld = false;
+            newCustomer.Type = value.CustomerType;
+            _context.Customer.Add(newCustomer);
+            _context.SaveChanges();
+
+            return Ok();
 
         }
         // GET api/<SaleController>/5
-        [HttpGet("Customer/{id}")]
-        public async Task<IActionResult> GetAsync(int id)
+        [HttpGet("Customer/{customerId}")]
+        public async Task<IActionResult> GetAsync(Guid customerId)
         {
-            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
-            if (user != null)
+            var customer = await _context.Customer.Where(i => i.CustomerId == customerId).ToListAsync();
+            if (!customer.Any())
             {
-                var customers = _context.Customer.Where(i => i.IsOld == false);
-                var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
-
-                return Ok(await customers.Where(i => i.EmployeeId == user.Id).FirstOrDefaultAsync());
-
+                return NotFound(new { message = "当客户没找到" });
             }
-            return BadRequest(new { message = "当前用户没找到" });
+            if (!await ChackAuthAsync(customerId))
+            {
+                return Unauthorized(new { message = "没有权限访问此客户" });
+            }
+
+            var contracts = await _context.Contracts.ToListAsync();
+            var users= await _context.Employees.ToListAsync();
+            var result = new List<object>();
+            for (int i = 0; i< customer.Count; i++)
+            {
+                customer[i].Contracts = contracts.Where(c => c.CustomerId == customerId && c.DealTime >= customer[i].CreateTime && c.DealTime <= customer[i].UpdateTime).ToList();
+                var employee =  users.Where(e => e.Id == customer[i].EmployeeId).FirstOrDefault();
+
+                result.Add(new
+                {
+                    customer = customer[i],
+                    employeeName = employee?.Name,
+                });
+            }
+
+            return Ok(result);
         }
 
         // POST api/<SaleController>
@@ -103,40 +146,62 @@ namespace AgentManage.Controllers
             {
                 return Conflict(new { message = "客户已存在" });
             }
-
+            if (!CustomerAssignCheckNumber(value.Type))
+            {
+                return BadRequest(new { message = "客户数量超出限制" });
+            }
             var customer = new Customer();
+            customer.CustomerId = Guid.NewGuid();
             customer.IsOld = false;
             customer.Reviewing = false;
             customer.Type = value.Type;
             customer.CreateTime = DateTime.Now;
             customer.UpdateTime = DateTime.Now;
             customer.BusinessLicense = value.BusinessLicense;
-            customer.ConnectDetail = value.ConnectDetail;
+            customer.ContactDetail = value.ContactDetail;
+            customer.EmployeeId = GetUserId();
 
             await _context.Customer.AddAsync(customer);
             _context.SaveChanges();
 
-            return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.BusinessLicense == value.BusinessLicense));
+            return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customer.CustomerId));
         }
 
         // PUT api/<SaleController>/5
-        [HttpPut("Customer/{id}")]
-        public async Task<IActionResult> PutAsync(int id, [FromBody] CustomerRequest value)
+        [HttpPut("Customer/{customerId}")]
+        public async Task<IActionResult> PutAsync(Guid customerId, [FromBody] CustomerRequest value)
         {
-            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.Id == id);
+            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.IsOld == false && i.CustomerId == customerId);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
             }
-            if (!await ChackAuthAsync(id))
+            if (!await ChackAuthAsync(customerId))
             {
-                return Unauthorized("没有权限访问此客户");
+                return Unauthorized(new { message = "没有权限访问此客户" });
             }
+            var customers = _context.Customer.Where(i => i.IsOld == false && i.EmployeeId == GetUserId());
+            if (value.Type == CustomerType.A)
+            {
+                if (customers.Where(i => i.Type == CustomerType.A).Count() >= 10)
+                {
+                    return BadRequest(new { message = "客户数量超出限制" });
+                }
+            }
+            else if (value.Type == CustomerType.B)
+            {
+                if (customers.Where(i => i.Type == CustomerType.A).Count() >= 20)
+                {
+                    return BadRequest(new { message = "客户数量超出限制" });
+                }
+            }
+
+
             customer.IsOld = false;
             customer.Reviewing = false;
             customer.Type = value.Type;
             customer.BusinessLicense = value.BusinessLicense;
-            customer.ConnectDetail = value.ConnectDetail;
+            customer.ContactDetail = value.ContactDetail;
 
             await _context.Customer.AddAsync(customer);
             _context.SaveChanges();
@@ -161,42 +226,73 @@ namespace AgentManage.Controllers
 
         //}
 
-        [HttpPost("Customer/{id}/Review")]
-        public async Task<IActionResult> PostAsync(int id)
+        [HttpPost("Customer/{customerId}/Review")]
+        public async Task<IActionResult> PostAsync(Guid customerId)
         {
-            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.Id == id);
+            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
             }
-            if (!await ChackAuthAsync(id))
+            if (!await ChackAuthAsync(customerId))
             {
-                return Unauthorized("没有权限访问此客户");
+                return Unauthorized(new { message = "没有权限访问此客户" });
             }
 
             customer.Reviewing = true;
-
-            await _context.Customer.AddAsync(customer);
+            customer.UpdateTime = DateTime.Now;
+            _context.Customer.Update(customer);
             _context.SaveChanges();
-            return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.Id == id));
+            return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.Id == customer.Id));
+        }
+
+        [HttpGet("Customer/Review")]
+        public async Task<IActionResult> GetReviewAsync()
+        {
+            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
+            var customers = _context.Customer.Where(i => i.IsOld == false);
+            if (user == null)
+            {
+                return BadRequest(new { message = "当前用户没找到" });
+            }
+
+            if (user.Role == Role.Administrator)
+            {
+            }
+            else if (user.Role == Role.Manager)
+            {
+                var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
+                customers = customers.Where(i => children.Contains(i.EmployeeId));
+            }
+            else
+            {
+                customers = customers.Where(i => i.EmployeeId == user.Id);
+            }
+
+            return Ok(await customers.Where(i => i.Reviewing == true).ToListAsync());
         }
 
 
-        [HttpGet("Customer/{id}/Contract")]
-        public async Task<IActionResult> PostAsync(int id, [FromBody] ContractRequest value)
+        [HttpPost("Customer/{customerId}/Contract")]
+        public async Task<IActionResult> PostAsync(Guid customerId, [FromBody] ContractRequest value)
         {
-            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.Id == id);
+            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
             }
-            if (!await ChackAuthAsync(id))
+            if (!await ChackAuthAsync(customerId))
             {
-                return Unauthorized("没有权限访问此客户");
+                return Unauthorized(new { message = "没有权限访问此客户" });
             }
+            if (!customer.Reviewing)
+            {
+                return NotFound(new { message = "客户没有被提出申请" });
+            }
+
             var contract = new Contract();
             contract.ContractName = value.ContractName;
-            contract.CustomerId = id;
+            contract.CustomerId = customerId;
             contract.DealAmount = value.DealAmount;
             contract.ContractFile = value.ContractFile;
             contract.DealDuration = value.DealDuration;
@@ -210,6 +306,8 @@ namespace AgentManage.Controllers
 
             customer.Reviewing = false;
             customer.Type = CustomerType.D;
+            customer.UpdateTime = DateTime.Now;
+             _context.Customer.Update(customer);
 
             _context.SaveChanges();
             return Ok();
@@ -221,10 +319,10 @@ namespace AgentManage.Controllers
             return int.Parse(user);
         }
 
-        private async ValueTask<bool> ChackAuthAsync(int customerId)
+        private async ValueTask<bool> ChackAuthAsync(Guid customerId)
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
-            var customers = _context.Customer.Where(i => i.IsOld == false && i.Id == customerId);
+            var customers = _context.Customer.Where(i => i.IsOld == false && i.CustomerId == customerId);
 
             if (user.Role == Role.Administrator)
             {
@@ -243,6 +341,30 @@ namespace AgentManage.Controllers
                 return c != null;
             }
 
+        }
+
+        private bool CustomerAssignCheckNumber(string customerType)
+        {
+            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
+            var customers = _context.Customer.Where(i => i.IsOld == false && i.EmployeeId == user.Id);
+            if (customerType == CustomerType.A)
+            {
+                if(customers.Where(i => i.Type == CustomerType.A).Count() >= 10)
+                {
+                    return false;
+                }
+            }
+            else if(customerType == CustomerType.B)
+            {
+                if (customers.Where(i => i.Type == CustomerType.A).Count() >= 20)
+                {
+                    return false;
+                }
+            }
+
+
+            return true;
+            
         }
     }
 }
