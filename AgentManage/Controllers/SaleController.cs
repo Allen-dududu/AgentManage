@@ -118,7 +118,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/{customerId}")]
         public async Task<IActionResult> GetAsync(Guid customerId)
         {
-            var customer =  _context.Customer.Where(i => i.CustomerId == customerId).ToList();
+            var customer =  _context.Customer.Where(i => i.CustomerId == customerId);
             if (!customer.Any())
             {
                 return NotFound(new { message = "当客户没找到" });
@@ -128,17 +128,17 @@ namespace AgentManage.Controllers
                 return Unauthorized(new { message = "没有权限访问此客户" });
             }
 
-            var contracts =  _context.Contracts.ToList();
-            var users=  _context.Employees.ToList();
+            var contracts =  _context.Contracts;
+            var users=  _context.Employees;
             var result = new List<object>();
-            for (int i = 0; i< customer.Count; i++)
+            foreach(var  i in customer)
             {
-                customer[i].Contracts = contracts.Where(c => c.CustomerId == customerId && c.DealTime >= customer[i].CreateTime && c.DealTime <= customer[i].UpdateTime).ToList();
-                var employee =  users.Where(e => e.Id == customer[i].EmployeeId).FirstOrDefault();
+                i.Contracts = await contracts.Where(c => c.CustomerId == customerId && c.DealTime >= i.CreateTime && c.DealTime <= i.UpdateTime).ToListAsync();
+                var employee = await users.Where(e => e.Id == i.EmployeeId).FirstOrDefaultAsync();
 
                 result.Add(new
                 {
-                    customer = customer[i],
+                    customer = i,
                     employeeName = employee?.Name,
                 });
             }
