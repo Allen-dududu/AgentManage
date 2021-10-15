@@ -44,11 +44,11 @@ namespace AgentManage.Controllers
                     customers = customers.Where( i => i.EmployeeId == user.Id);
                 }
                 var result = new List<Customer>();
-                var customersA = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now);
+                var customersA = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now);
 
-                var customersB = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now);
+                var customersB = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now);
 
-                var customersC = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now);
+                var customersC = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.Now);
 
                 result.AddRange(customersA);
                 result.AddRange(customersB);
