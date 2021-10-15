@@ -118,34 +118,29 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/{customerId}")]
         public async Task<IActionResult> GetAsync(Guid customerId)
         {
-            var result = new List<object>();
-
-            using (_context)
+            var customer =  _context.Customer.Where(i => i.CustomerId == customerId).AsQueryable().AsNoTracking().ToList();
+            if (!customer.Any())
             {
-                var customer = _context.Customer.Where(i => i.CustomerId == customerId);
-                if (!customer.Any())
-                {
-                    return NotFound(new { message = "当客户没找到" });
-                }
-                if (!await ChackAuthAsync(customerId))
-                {
-                    return Unauthorized(new { message = "没有权限访问此客户" });
-                }
+                return NotFound(new { message = "当客户没找到" });
+            }
+            if (!await ChackAuthAsync(customerId))
+            {
+                return Unauthorized(new { message = "没有权限访问此客户" });
+            }
 
-                var contracts = _context.Contracts;
-                var users = _context.Employees;
-                foreach (var i in customer)
+            var contracts =  _context.Contracts.AsQueryable().AsNoTracking().ToList();
+            var users=  _context.Employees.AsQueryable().AsNoTracking().ToList();
+            var result = new List<object>();
+            for (int i = 0; i< customer.Count; i++)
+            {
+                customer[i].Contracts =  contracts.Where(c => c.CustomerId == customerId && c.DealTime >= customer[i].CreateTime && c.DealTime <= customer[i].UpdateTime).ToList();
+                var employee =  users.Where(e => e.Id == customer[i].EmployeeId).FirstOrDefault();
+
+                result.Add(new
                 {
-                    i.Contracts = await contracts.Where(c => c.CustomerId == customerId && c.DealTime >= i.CreateTime && c.DealTime <= i.UpdateTime).ToListAsync();
-                    var employee = await users.Where(e => e.Id == i.EmployeeId).FirstOrDefaultAsync();
-
-                    result.Add(new
-                    {
-                        customer = i,
-                        employeeName = employee?.Name,
-                    });
-                }
-
+                    customer = customer[i],
+                    employeeName = employee?.Name,
+                });
             }
 
             return Ok(result);
