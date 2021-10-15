@@ -118,7 +118,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/{customerId}")]
         public async Task<IActionResult> GetAsync(Guid customerId)
         {
-            var customer = await _context.Customer.Where(i => i.CustomerId == customerId).ToListAsync();
+            var customer =  _context.Customer.Where(i => i.CustomerId == customerId).ToList();
             if (!customer.Any())
             {
                 return NotFound(new { message = "当客户没找到" });
@@ -128,8 +128,8 @@ namespace AgentManage.Controllers
                 return Unauthorized(new { message = "没有权限访问此客户" });
             }
 
-            var contracts = await _context.Contracts.ToListAsync();
-            var users= await _context.Employees.ToListAsync();
+            var contracts =  _context.Contracts.ToList();
+            var users=  _context.Employees.ToList();
             var result = new List<object>();
             for (int i = 0; i< customer.Count; i++)
             {
