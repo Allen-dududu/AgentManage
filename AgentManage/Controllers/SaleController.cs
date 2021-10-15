@@ -107,6 +107,7 @@ namespace AgentManage.Controllers
             newCustomer.UpdateTime = DateTime.Now;
             newCustomer.IsOld = false;
             newCustomer.Type = value.CustomerType;
+            newCustomer.EmployeeId = user.Id;
             _context.Customer.Add(newCustomer);
             _context.SaveChanges();
 
