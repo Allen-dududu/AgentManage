@@ -43,9 +43,17 @@ namespace AgentManage.Controllers
                 {
                     customers = customers.Where( i => i.EmployeeId == user.Id);
                 }
+                var result = new List<Customer>();
+                var customersA = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now);
 
+                var customersB = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now);
 
-                return Ok(customers.ToList().OrderByDescending(i => i.Id));
+                var customersC = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now);
+
+                result.AddRange(customersA);
+                result.AddRange(customersB);
+                result.AddRange(customersC);
+                return Ok(result.OrderByDescending(i => i.UpdateTime));
 
             }
             return BadRequest(new { message = "当前用户没找到" });
@@ -349,14 +357,14 @@ namespace AgentManage.Controllers
             var customers = _context.Customer.Where(i => i.IsOld == false && i.EmployeeId == user.Id);
             if (customerType == CustomerType.A)
             {
-                if(customers.Where(i => i.Type == CustomerType.A).Count() >= 10)
+                if(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).Count() >= 10)
                 {
                     return false;
                 }
             }
             else if(customerType == CustomerType.B)
             {
-                if (customers.Where(i => i.Type == CustomerType.A).Count() >= 20)
+                if (customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now).Count() >= 20)
                 {
                     return false;
                 }

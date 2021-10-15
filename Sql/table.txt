@@ -27,7 +27,7 @@ CREATE TABLE "AgentManage".Contract(
 
    "Id" SERIAL PRIMARY KEY   NOT NULL,
    "DealTime"  timestamp NOT NULL,
-   "DealAmount" money NOT NULL,
+   "DealAmount" NUMERIC  NOT NULL,
    "Remark"  text,
    "ContractName" text NOT NULL,
    "ContractFile" text ,
