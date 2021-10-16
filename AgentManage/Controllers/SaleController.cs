@@ -219,7 +219,7 @@ namespace AgentManage.Controllers
         [HttpPost("Customer/{customerId}/Review")]
         public async Task<IActionResult> PostAsync(Guid customerId)
         {
-            var customer = await _context.Customer.AsQueryable().AsNoTracking().FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
+            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
