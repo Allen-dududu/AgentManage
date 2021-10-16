@@ -27,7 +27,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer")]
         public async Task<IActionResult> GetAsync()
         {
-            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
+            var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             var customers = _context.Customer.Where(i => i.IsOld == false);
             if (user != null)
             {
@@ -63,7 +63,7 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> GetOpenAsync()
         {
             var openCustomer = new List<Customer>();
-            var customers = await _context.Customer.Where(i => i.IsOld == false && i.Type != CustomerType.D).ToListAsync();
+            var customers = await _context.Customer.Where(i => i.IsOld == false && i.Type != CustomerType.D).AsQueryable().AsNoTracking().ToListAsync();
 
             var customersA = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now);
 
@@ -89,8 +89,8 @@ namespace AgentManage.Controllers
                 return BadRequest(new { message = "客户数量超出限制" });
             }
 
-            var user = await _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefaultAsync();
-            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId).OrderByDescending(i => i.Id).FirstOrDefaultAsync();
+            var user = await _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
+            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId).OrderByDescending(i => i.Id).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
 
             customer.IsOld = true;
             customer.UpdateTime = DateTime.Now;
@@ -150,7 +150,7 @@ namespace AgentManage.Controllers
         [HttpPost("Customer")]
         public async Task<IActionResult> PostAsync([FromBody] CustomerRequest value)
         {
-            var existcustomer = await _context.Customer.FirstOrDefaultAsync(i => i.BusinessLicense == value.BusinessLicense);
+            var existcustomer = await _context.Customer.AsQueryable().AsNoTracking().FirstOrDefaultAsync(i => i.BusinessLicense == value.BusinessLicense);
             if (existcustomer != null)
             {
                 return Conflict(new { message = "客户已存在" });
@@ -180,7 +180,7 @@ namespace AgentManage.Controllers
         [HttpPut("Customer/{customerId}")]
         public async Task<IActionResult> PutAsync(Guid customerId, [FromBody] CustomerRequest value)
         {
-            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.IsOld == false && i.CustomerId == customerId);
+            var customer = await _context.Customer.AsQueryable().AsNoTracking().FirstOrDefaultAsync(i => i.IsOld == false && i.CustomerId == customerId);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
@@ -189,7 +189,7 @@ namespace AgentManage.Controllers
             {
                 return Unauthorized(new { message = "没有权限访问此客户" });
             }
-            var customers = _context.Customer.Where(i => i.IsOld == false && i.EmployeeId == GetUserId());
+            var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.EmployeeId == GetUserId());
             if (value.Type == CustomerType.A)
             {
                 if (customers.Where(i => i.Type == CustomerType.A).Count() >= 10)
@@ -238,7 +238,7 @@ namespace AgentManage.Controllers
         [HttpPost("Customer/{customerId}/Review")]
         public async Task<IActionResult> PostAsync(Guid customerId)
         {
-            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
+            var customer = await _context.Customer.AsQueryable().AsNoTracking().FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
@@ -258,7 +258,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/Review")]
         public async Task<IActionResult> GetReviewAsync()
         {
-            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
+            var user = _context.Employees.AsQueryable().AsNoTracking().Where(i => i.Id == GetUserId()).FirstOrDefault();
             var customers = _context.Customer.Where(i => i.IsOld == false);
             if (user == null)
             {
@@ -330,7 +330,7 @@ namespace AgentManage.Controllers
 
         private async ValueTask<bool> ChackAuthAsync(Guid customerId)
         {
-            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
+            var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             var customers = _context.Customer.Where(i => i.IsOld == false && i.CustomerId == customerId);
 
             if (user.Role == Role.Administrator)
@@ -354,8 +354,8 @@ namespace AgentManage.Controllers
 
         private bool CustomerAssignCheckNumber(string customerType)
         {
-            var user = _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefault();
-            var customers = _context.Customer.Where(i => i.IsOld == false && i.EmployeeId == user.Id);
+            var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
+            var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.EmployeeId == user.Id);
             if (customerType == CustomerType.A)
             {
                 if(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).Count() >= 10)
