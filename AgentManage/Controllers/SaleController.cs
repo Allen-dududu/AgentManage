@@ -34,6 +34,7 @@ namespace AgentManage.Controllers
             if (user != null)
             {
                 var customers = await _customerRepository.GetCustomers(user.Role, user.Id);
+                customers = customers.Where(i => i.IsOld == false).ToList();
                 if (isD)
                 {
                     result.AddRange(customers.Where(i => i.Type == CustomerType.D).ToList());
@@ -57,7 +58,7 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> GetOpenAsync()
         {
             var customers = await _customerRepository.GetCustomers(Role.Administrator, 0);
-
+            customers = customers.Where(i => i.IsOld == false).ToList();
             var result = new List<CustomerInfo>();
 
             result.AddRange( customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList());
@@ -162,7 +163,7 @@ namespace AgentManage.Controllers
         [HttpPut("Customer/{customerId}")]
         public async Task<IActionResult> PutAsync(Guid customerId, [FromBody] CustomerRequest value)
         {
-            var customer = await _context.Customer.AsQueryable().AsNoTracking().FirstOrDefaultAsync(i => i.IsOld == false && i.CustomerId == customerId);
+            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.IsOld == false && i.CustomerId == customerId);
             if (customer == null)
             {
                 return NotFound(new { message = "当客户没找到" });
@@ -188,8 +189,6 @@ namespace AgentManage.Controllers
             }
 
 
-            customer.IsOld = false;
-            customer.Reviewing = false;
             customer.Type = value.Type;
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
