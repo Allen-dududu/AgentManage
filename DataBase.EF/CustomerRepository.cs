@@ -13,13 +13,37 @@ namespace DataBase.EF
     public class CustomerRepository : ICustomerRepository
     {
         private readonly string connectString = Environment.GetEnvironmentVariable("DapperConnect");
-        public async Task<List<Customer>> GetCustomers()
+        public async Task<List<CustomerInfo>> GetCustomers(string role,int employeeId)
         {
-            using (IDbConnection db = new NpgsqlConnection(connectString))
+            using IDbConnection db = new NpgsqlConnection(connectString);
+            IEnumerable<CustomerInfo> result = null;
+            if (role == Role.Administrator)
             {
-                var result = await db.QueryAsync<Customer>("Select * From Customer");
-                return result.ToList();
+                 result = await db.QueryAsync<CustomerInfo>(@"Select 
+c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",
+ e.""Name"" as ""EmployeeName"" 
+From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id""");
             }
+            else if(role == Role.Manager)
+            {
+                result = await db.QueryAsync<CustomerInfo>(@"Select 
+c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",
+ e.""Name"" as ""EmployeeName"" 
+From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
+where c.""EmployeeId"" in (SELECT ""Id""  FROM ""AgentManage"".employee  WHERE ""Pid""  = @employeeId) ", new { employeeId});
+            }
+            else
+            {
+                result = await db.QueryAsync<CustomerInfo>(@"Select 
+c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",
+ e.""Name"" as ""EmployeeName"" 
+From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
+where c.""EmployeeId"" = @employeeId", new { employeeId });
+            }
+            return result.ToList();
         }
 
         public async Task<List<CustomerDetail>> GetCustomersById(Guid customerId)

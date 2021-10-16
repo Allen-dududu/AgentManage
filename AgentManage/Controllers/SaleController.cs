@@ -27,35 +27,26 @@ namespace AgentManage.Controllers
 
         // GET: api/<SaleController>
         [HttpGet("Customer")]
-        public async Task<IActionResult> GetAsync()
+        public async Task<IActionResult> GetAsync(bool isD)
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
-            var customers = _context.Customer.Where(i => i.IsOld == false);
             if (user != null)
             {
-                if (user.Role == Role.Administrator)
+                var customers = await _customerRepository.GetCustomers(user.Role, user.Id);
+                if (isD)
                 {
-                }
-                else if (user.Role == Role.Manager)
-                {
-                    var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
-                    customers = customers.Where(i => children.Contains(i.EmployeeId));
+                    customers = customers.Where(i => i.Type == CustomerType.D).ToList();
                 }
                 else
                 {
-                    customers = customers.Where( i => i.EmployeeId == user.Id);
+                    customers = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).ToList();
+
+                    customers = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now).ToList();
+
+                    customers = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.Now).ToList();
+
                 }
-                var result = new List<Customer>();
-                var customersA = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now);
-
-                var customersB = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now);
-
-                var customersC = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.Now);
-
-                result.AddRange(customersA);
-                result.AddRange(customersB);
-                result.AddRange(customersC);
-                return Ok(result.OrderByDescending(i => i.UpdateTime));
+                return Ok(customers.OrderByDescending(i => i.UpdateTime));
 
             }
             return BadRequest(new { message = "当前用户没找到" });

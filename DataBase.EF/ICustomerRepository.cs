@@ -7,7 +7,7 @@ namespace DataBase.EF
 {
     public interface ICustomerRepository
     {
-        public Task<List<Customer>> GetCustomers();
+        public Task<List<CustomerInfo>> GetCustomers(string role, int employeeId);
 
         public Task<List<CustomerDetail>> GetCustomersById(Guid customerId);
     }
