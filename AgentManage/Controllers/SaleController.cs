@@ -30,23 +30,24 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> GetAsync(bool isD)
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
+            var result = new List<CustomerInfo>();
             if (user != null)
             {
                 var customers = await _customerRepository.GetCustomers(user.Role, user.Id);
                 if (isD)
                 {
-                    customers = customers.Where(i => i.Type == CustomerType.D).ToList();
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.D).ToList());
                 }
                 else
                 {
-                    customers = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).ToList();
+                    result.AddRange( customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).ToList());
 
-                    customers = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now).ToList();
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now).ToList());
 
-                    customers = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.Now).ToList();
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.Now).ToList());
 
                 }
-                return Ok(customers.OrderByDescending(i => i.UpdateTime));
+                return Ok(result.OrderByDescending(i => i.UpdateTime));
 
             }
             return BadRequest(new { message = "当前用户没找到" });
@@ -57,13 +58,15 @@ namespace AgentManage.Controllers
         {
             var customers = await _customerRepository.GetCustomers(Role.Administrator, 0);
 
-            customers = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList();
+            var result = new List<CustomerInfo>();
 
-            customers = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList();
+            result.AddRange( customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList());
 
-            customers = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now).ToList();
+            result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList());
 
-            return Ok(customers.OrderByDescending(i => i.UpdateTime));
+            result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now).ToList());
+
+            return Ok(result.OrderByDescending(i => i.UpdateTime));
         }
         [HttpPost("Customer/Open")]
         public async Task<IActionResult> AssignOpenAsync(Open value)
