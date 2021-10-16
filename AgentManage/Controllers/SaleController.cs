@@ -29,7 +29,6 @@ namespace AgentManage.Controllers
         [HttpGet("Customer")]
         public async Task<IActionResult> GetAsync(bool isD)
         {
-            throw new Exception("test");
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             if (user != null)
             {
