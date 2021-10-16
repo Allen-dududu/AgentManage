@@ -33,7 +33,10 @@ namespace AgentManage
             {
                 _logger.LogError(ex, ex.Message);
                 _logger.LogError($"[REQUEST FAILED]:  {GetHost(context)} {GetPath(context)}, {GetQuery(context)}");
-                await HandleExceptionAsync(context, ex);
+                var response = context.Response;
+                response.ContentType = "application/json";
+                response.StatusCode = 500;
+                await response.WriteAsync(JsonConvert.SerializeObject(new { message = "程序内部错误"})).ConfigureAwait(false);
             }
         }
 

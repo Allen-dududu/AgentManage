@@ -29,6 +29,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer")]
         public async Task<IActionResult> GetAsync(bool isD)
         {
+            throw new Exception("test");
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             if (user != null)
             {
@@ -70,7 +71,7 @@ namespace AgentManage.Controllers
         {
             if (value.CustomerType != CustomerType.A && value.CustomerType != CustomerType.B && value.CustomerType != CustomerType.C)
             {
-                return  BadRequest(new { message = "客户类型不正确." });
+                return BadRequest(new { message = "客户类型不正确." });
             }
             if (!CustomerAssignCheckNumber(value.CustomerType))
             {
@@ -106,7 +107,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/{customerId}")]
         public async Task<IActionResult> GetAsync(Guid customerId)
         {
-            var customer =  _context.Customer.Where(i => i.CustomerId == customerId).AsQueryable().AsNoTracking().ToList();
+            var customer = _context.Customer.Where(i => i.CustomerId == customerId).AsQueryable().AsNoTracking().ToList();
             if (!customer.Any())
             {
                 return NotFound(new { message = "当客户没找到" });
@@ -125,6 +126,10 @@ namespace AgentManage.Controllers
         [HttpPost("Customer")]
         public async Task<IActionResult> PostAsync([FromBody] CustomerRequest value)
         {
+            if (string.IsNullOrWhiteSpace(value.BusinessLicense) || string.IsNullOrWhiteSpace(value.ContactDetail))
+            {
+                return BadRequest("参数不能为空");
+            }
             var existcustomer = await _context.Customer.AsQueryable().AsNoTracking().FirstOrDefaultAsync(i => i.BusinessLicense == value.BusinessLicense);
             if (existcustomer != null)
             {

@@ -8,12 +8,12 @@ namespace AgentManage.Model
 {
     public class CustomerRequest
     {
-        [Required]
+
         public string BusinessLicense { get; set; }
-        [Required]
+        
         public string ContactDetail { get; set; }
 
-        [Required]
+
         [CustomerType]
         public string Type { get; set; }
         //[Required]
