@@ -193,7 +193,7 @@ namespace AgentManage.Controllers
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
 
-            await _context.Customer.AddAsync(customer);
+             _context.Customer.Update(customer);
             _context.SaveChanges();
 
             return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.BusinessLicense == value.BusinessLicense));
