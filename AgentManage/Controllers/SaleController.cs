@@ -314,7 +314,7 @@ namespace AgentManage.Controllers
         private async ValueTask<bool> ChackAuthAsync(Guid customerId)
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
-            var customers = _context.Customer.Where(i => i.IsOld == false && i.CustomerId == customerId);
+            var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.CustomerId == customerId);
 
             if (user.Role == Role.Administrator)
             {
@@ -329,7 +329,7 @@ namespace AgentManage.Controllers
             }
             else
             {
-                var c = customers.Where(i => i.EmployeeId == user.Id).FirstOrDefaultAsync();
+                var c = await customers.Where(i => i.EmployeeId == user.Id).FirstOrDefaultAsync();
                 return c != null;
             }
 

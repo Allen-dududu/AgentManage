@@ -36,7 +36,7 @@ namespace AgentManage
             services.AddControllers();
             services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
             services.AddDbContext<Context>(options =>
-             options.UseNpgsql(Environment.GetEnvironmentVariable("Context")), ServiceLifetime.Transient);
+             options.UseNpgsql(Environment.GetEnvironmentVariable("Context")));
             // Documentation can be accessed with http://localhost:5002/swagger/ui/index.html
             //注册Swagger生成器，定义一个和多个Swagger 文档
             services.AddSwaggerGen(c =>
