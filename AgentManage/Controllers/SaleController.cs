@@ -55,20 +55,15 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/Open")]
         public async Task<IActionResult> GetOpenAsync()
         {
-            var openCustomer = new List<Customer>();
-            var customers = await _context.Customer.Where(i => i.IsOld == false && i.Type != CustomerType.D).AsQueryable().AsNoTracking().ToListAsync();
+            var customers = await _customerRepository.GetCustomers(Role.Administrator, 0);
 
-            var customersA = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now);
+            customers = customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList();
 
-            var customersB = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now);
+            customers = customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList();
 
-            var customersC = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now);
+            customers = customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now).ToList();
 
-            openCustomer.AddRange(customersA);
-            openCustomer.AddRange(customersB);
-            openCustomer.AddRange(customersC);
-
-            return Ok(openCustomer.OrderByDescending(i => i.UpdateTime));
+            return Ok(customers.OrderByDescending(i => i.UpdateTime));
         }
         [HttpPost("Customer/Open")]
         public async Task<IActionResult> AssignOpenAsync(Open value)
