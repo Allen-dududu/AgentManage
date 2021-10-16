@@ -71,6 +71,7 @@ namespace AgentManage
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecurityKey")))
                 };
             });
+            services.AddSingleton<ICustomerRepository>( new CustomerRepository());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -18,9 +18,11 @@ namespace AgentManage.Controllers
     public class SaleController : ControllerBase
     {
         private readonly Context _context;
-        public SaleController(Context context)
+        private readonly ICustomerRepository _customerRepository;
+        public SaleController(Context context, ICustomerRepository customerRepository)
         {
             _context = context;
+            _customerRepository = customerRepository;
         }
 
         // GET: api/<SaleController>
@@ -128,20 +130,7 @@ namespace AgentManage.Controllers
                 return Unauthorized(new { message = "没有权限访问此客户" });
             }
 
-            var contracts =  _context.Contracts.AsQueryable().AsNoTracking().ToList();
-            var users=  _context.Employees.AsQueryable().AsNoTracking().ToList();
-            var result = new List<object>();
-            for (int i = 0; i< customer.Count; i++)
-            {
-                customer[i].Contracts =  contracts.Where(c => c.CustomerId == customerId && c.DealTime >= customer[i].CreateTime && c.DealTime <= customer[i].UpdateTime).ToList();
-                var employee =  users.Where(e => e.Id == customer[i].EmployeeId).FirstOrDefault();
-
-                result.Add(new
-                {
-                    customer = customer[i],
-                    employeeName = employee?.Name,
-                });
-            }
+            var result = await _customerRepository.GetCustomersById(customerId);
 
             return Ok(result);
         }
@@ -301,14 +290,16 @@ namespace AgentManage.Controllers
 
             var contract = new Contract();
             contract.ContractName = value.ContractName;
-            contract.CustomerId = customerId;
+            contract.CustomerId = customer.CustomerId;
             contract.DealAmount = value.DealAmount;
             contract.ContractFile = value.ContractFile;
+            contract.ContractType = value.ContractType;
             contract.DealDuration = value.DealDuration;
             contract.EmployeeId = GetUserId();
             contract.Remark = value.Remark;
             contract.AfterSale = value.AfterSale;
             contract.DealTime = DateTime.Now;
+            contract.CustomerId2 = customer.Id;
 
 
             await _context.Contracts.AddAsync(contract);
