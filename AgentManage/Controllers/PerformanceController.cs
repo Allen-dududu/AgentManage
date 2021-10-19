@@ -46,8 +46,8 @@ namespace AgentManage.Controllers
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
-                        Month = c.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.Day)).Sum(i => i.DealAmount),
-                        Year = c.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.DayOfYear)).Sum(i => i.DealAmount),
+                        Month = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)).Sum(i => i.DealAmount),
+                        Year = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear)).Sum(i => i.DealAmount),
                         All = c.Sum(i => i.DealAmount),
                     };
                     result.Add(e);
@@ -67,8 +67,8 @@ namespace AgentManage.Controllers
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
-                        Month = c.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.Day)).Sum(i => i.DealAmount),
-                        Year = c.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.DayOfYear)).Sum(i => i.DealAmount),
+                        Month = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)).Sum(i => i.DealAmount),
+                        Year = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear)).Sum(i => i.DealAmount),
                         All = c.Sum(i => i.DealAmount),
                     };
                     result.Add(e);
@@ -80,8 +80,8 @@ namespace AgentManage.Controllers
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
-                    Month = _context.Contracts.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.Day) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
-                    Year = _context.Contracts.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.DayOfYear) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
+                    Month = _context.Contracts.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
+                    Year = _context.Contracts.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
                     All = _context.Contracts.Where(i => i.EmployeeId == user.Id).Sum(i => i.DealAmount),
                 });
             }

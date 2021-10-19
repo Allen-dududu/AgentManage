@@ -41,11 +41,11 @@ namespace AgentManage.Controllers
                 }
                 else
                 {
-                    result.AddRange( customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).ToList());
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.UtcNow).ToList());
 
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now).ToList());
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.UtcNow).ToList());
 
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.Now).ToList());
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.UtcNow).ToList());
 
                 }
                 return Ok(result.OrderByDescending(i => i.UpdateTime));
@@ -61,11 +61,11 @@ namespace AgentManage.Controllers
             customers = customers.Where(i => i.IsOld == false).ToList();
             var result = new List<CustomerInfo>();
 
-            result.AddRange( customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList());
+            result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.UtcNow).ToList());
 
-            result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.Now).ToList());
+            result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.UtcNow).ToList());
 
-            result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.Now).ToList());
+            result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.UtcNow).ToList());
 
             return Ok(result.OrderByDescending(i => i.UpdateTime));
         }
@@ -85,7 +85,7 @@ namespace AgentManage.Controllers
             var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId).OrderByDescending(i => i.Id).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
 
             customer.IsOld = true;
-            customer.UpdateTime = DateTime.Now;
+            customer.UpdateTime = DateTime.UtcNow;
             _context.Customer.Update(customer);
             _context.SaveChanges();
             _context.Entry(customer).State = EntityState.Detached;
@@ -95,8 +95,8 @@ namespace AgentManage.Controllers
             newCustomer.CustomerId = customer.CustomerId;
             newCustomer.BusinessLicense = customer.BusinessLicense;
             newCustomer.ContactDetail = customer.ContactDetail;
-            newCustomer.CreateTime = DateTime.Now;
-            newCustomer.UpdateTime = DateTime.Now;
+            newCustomer.CreateTime = DateTime.UtcNow;
+            newCustomer.UpdateTime = DateTime.UtcNow;
             newCustomer.IsOld = false;
             newCustomer.Type = value.CustomerType;
             newCustomer.EmployeeId = user.Id;
@@ -147,8 +147,8 @@ namespace AgentManage.Controllers
             customer.IsOld = false;
             customer.Reviewing = false;
             customer.Type = value.Type;
-            customer.CreateTime = DateTime.Now;
-            customer.UpdateTime = DateTime.Now;
+            customer.CreateTime = DateTime.UtcNow;
+            customer.UpdateTime = DateTime.UtcNow;
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
             customer.EmployeeId = GetUserId();
@@ -193,7 +193,7 @@ namespace AgentManage.Controllers
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
 
-             _context.Customer.Update(customer);
+            _context.Customer.Update(customer);
             _context.SaveChanges();
 
             return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.BusinessLicense == value.BusinessLicense));
@@ -230,7 +230,7 @@ namespace AgentManage.Controllers
             }
 
             customer.Reviewing = true;
-            customer.UpdateTime = DateTime.Now;
+            customer.UpdateTime = DateTime.UtcNow;
             _context.Customer.Update(customer);
             _context.SaveChanges();
             return Ok(await _context.Customer.FirstOrDefaultAsync(i => i.Id == customer.Id));
@@ -290,7 +290,7 @@ namespace AgentManage.Controllers
             contract.EmployeeId = GetUserId();
             contract.Remark = value.Remark;
             contract.AfterSale = value.AfterSale;
-            contract.DealTime = DateTime.Now;
+            contract.DealTime = DateTime.UtcNow;
             contract.CustomerId2 = customer.Id;
 
 
@@ -298,11 +298,23 @@ namespace AgentManage.Controllers
 
             customer.Reviewing = false;
             customer.Type = CustomerType.D;
-            customer.UpdateTime = DateTime.Now;
-             _context.Customer.Update(customer);
+            customer.UpdateTime = DateTime.UtcNow;
+            _context.Customer.Update(customer);
 
             _context.SaveChanges();
             return Ok();
+        }
+
+        [HttpGet("Customer/Contract/{contractId}")]
+        public async Task<IActionResult> GetContractAsync(int contractId)
+        {
+            var contract = await _context.Contracts.FirstOrDefaultAsync(i => i.Id == contractId);
+            if (contract == null)
+            {
+                return NotFound(new { message = "合同没找到" });
+            }
+
+            return Ok(contract);
         }
 
         private int GetUserId()
@@ -341,14 +353,14 @@ namespace AgentManage.Controllers
             var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.EmployeeId == user.Id);
             if (customerType == CustomerType.A)
             {
-                if(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.Now).Count() >= 10)
+                if (customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.UtcNow).Count() >= 10)
                 {
                     return false;
                 }
             }
-            else if(customerType == CustomerType.B)
+            else if (customerType == CustomerType.B)
             {
-                if (customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.Now).Count() >= 20)
+                if (customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.UtcNow).Count() >= 20)
                 {
                     return false;
                 }
@@ -356,7 +368,7 @@ namespace AgentManage.Controllers
 
 
             return true;
-            
+
         }
     }
 }
