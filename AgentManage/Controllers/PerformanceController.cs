@@ -27,20 +27,20 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> Get()
         {
 
-            var user =await  _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefaultAsync();
-            if(user == null)
+            var user = await _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefaultAsync();
+            if (user == null)
             {
                 return BadRequest(new { message = "当前账号不正确" });
             }
-            var employees =  _context.Employees;
+            var employees = _context.Employees;
             var result = new List<object>();
-            if(user.Role == Role.Administrator)
+            if (user.Role == Role.Administrator)
             {
                 var constract = from c in _context.Contracts
-                group c by c.EmployeeId into newGroup
-                select newGroup;
+                                group c by c.EmployeeId into newGroup
+                                select newGroup;
 
-                foreach(var c in await constract.ToListAsync())
+                foreach (var c in await constract.ToListAsync())
                 {
                     var e = new
                     {
@@ -52,12 +52,12 @@ namespace AgentManage.Controllers
                     };
                     result.Add(e);
                 }
-                
+
             }
-            else if(user.Role == Role.Manager) {
+            else if (user.Role == Role.Manager)
+            {
                 var children = await employees.Where(i => i.Pid == user.Id).ToListAsync();
-                var constract = from c in _context.Contracts
-                                where children.Select(i => i.Id).Contains(c.EmployeeId)
+                var constract = from c in _context.Contracts.Where(x => children.Select(i => i.Id).Contains(x.EmployeeId))
                                 group c by c.EmployeeId into newGroup
                                 select newGroup;
 
@@ -80,7 +80,7 @@ namespace AgentManage.Controllers
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
-                    Month =  _context.Contracts.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.Day) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
+                    Month = _context.Contracts.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.Day) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
                     Year = _context.Contracts.Where(i => i.DealTime >= DateTime.Now.AddDays(-DateTime.Now.DayOfYear) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
                     All = _context.Contracts.Where(i => i.EmployeeId == user.Id).Sum(i => i.DealAmount),
                 });
