@@ -78,7 +78,7 @@ namespace AgentManage.Controllers
             }
             else
             {
-                var employeeContract = _context.Contracts.AsQueryable().AsNoTracking().Where(i => i.EmployeeId == user.Id);
+                var employeeContract = await _context.Contracts.AsQueryable().AsNoTracking().Where(i => i.EmployeeId == user.Id).ToListAsync();
                 result.Add(new
                 {
                     EmployeeId = user.Id,
