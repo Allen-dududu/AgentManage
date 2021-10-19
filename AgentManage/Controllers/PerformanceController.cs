@@ -17,11 +17,9 @@ namespace AgentManage.Controllers
     public class PerformanceController : ControllerBase
     {
         private readonly Context _context;
-        private readonly IContractRepository _contractRepository;
         public PerformanceController(Context context, IContractRepository contractRepository)
         {
             _context = context;
-            _contractRepository = contractRepository;
         }
 
         // GET: api/<ReportController>
