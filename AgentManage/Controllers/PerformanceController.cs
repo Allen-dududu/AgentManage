@@ -17,9 +17,11 @@ namespace AgentManage.Controllers
     public class PerformanceController : ControllerBase
     {
         private readonly Context _context;
-        public PerformanceController(Context context)
+        private readonly IContractRepository _contractRepository;
+        public PerformanceController(Context context, IContractRepository contractRepository)
         {
             _context = context;
+            _contractRepository = contractRepository;
         }
 
         // GET: api/<ReportController>
@@ -27,28 +29,29 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> Get()
         {
 
-            var user = await _context.Employees.Where(i => i.Id == GetUserId()).FirstOrDefaultAsync();
+            var user = await _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
             if (user == null)
             {
                 return BadRequest(new { message = "当前账号不正确" });
             }
-            var employees = _context.Employees;
+            var employees = _context.Employees.AsQueryable().AsNoTracking();
             var result = new List<object>();
             if (user.Role == Role.Administrator)
             {
-                var constract = from c in _context.Contracts
-                                group c by c.EmployeeId into newGroup
-                                select newGroup;
+                var constract = await _context.Contracts.AsQueryable().AsNoTracking().ToListAsync();
 
-                foreach (var c in await constract.ToListAsync())
+                var cons =  constract.GroupBy(i => i.EmployeeId).Select(x => x).ToList();
+                foreach (var c in cons)
                 {
                     var e = new
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
-                        Month = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)).Sum(i => i.DealAmount),
-                        Year = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear)).Sum(i => i.DealAmount),
-                        All = c.Sum(i => i.DealAmount),
+                        Month = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
+                            c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)&& i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        Year = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount) 
+                            , c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        All = decimal.Add(c.Where(i => i.ContractType == 1).Sum(i => i.DealAmount), c.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                     };
                     result.Add(e);
                 }
@@ -56,33 +59,38 @@ namespace AgentManage.Controllers
             }
             else if (user.Role == Role.Manager)
             {
-                var children = await employees.Where(i => i.Pid == user.Id).ToListAsync();
-                var constract = from c in _context.Contracts.Where(x => children.Select(i => i.Id).Contains(x.EmployeeId))
-                                group c by c.EmployeeId into newGroup
-                                select newGroup;
+                var children = await employees.Where(i => i.Pid == user.Id).AsQueryable().AsNoTracking().ToListAsync();
+                var constract = await _context.Contracts.AsQueryable().AsNoTracking().Where(x => children.Select(i => i.Id).Contains(x.EmployeeId)).ToListAsync();
+                var cons = constract.GroupBy(i => i.EmployeeId).Select(x => x).ToList();
 
-                foreach (var c in await constract.ToListAsync())
+                foreach (var c in cons)
                 {
                     var e = new
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
-                        Month = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)).Sum(i => i.DealAmount),
-                        Year = c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear)).Sum(i => i.DealAmount),
-                        All = c.Sum(i => i.DealAmount),
+                        Month = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
+                            c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        Year = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount)
+                            , c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        All = decimal.Add(c.Where(i => i.ContractType == 1).Sum(i => i.DealAmount), c.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                     };
                     result.Add(e);
                 }
             }
             else
             {
+                var employeeContract = _context.Contracts.AsQueryable().AsNoTracking().Where(i => i.EmployeeId == user.Id);
                 result.Add(new
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
-                    Month = _context.Contracts.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
-                    Year = _context.Contracts.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.EmployeeId == user.Id).Sum(i => i.DealAmount),
-                    All = _context.Contracts.Where(i => i.EmployeeId == user.Id).Sum(i => i.DealAmount),
+                    Month = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    Year = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    All = decimal.Add(employeeContract.Where(i => i.ContractType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                 });
             }
 
