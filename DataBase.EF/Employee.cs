@@ -13,5 +13,6 @@ namespace DataBase.EF
         public string Role { get; set; }
         public int Status { get; set; }
         public int Pid { get; set; }
+
     }
 }

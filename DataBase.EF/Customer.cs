@@ -19,7 +19,14 @@ namespace DataBase.EF
         public bool IsOld { get; set; }
         public string Informant { get; set; }
         public bool Reviewing { get; set; }
+        public string FollowUp { get; set; }
+        public bool Discard { get; set; }
 
         public ICollection<Contract> Contracts { get; set; }
+
+        public virtual string test()
+        {
+            return "";
+        }
     }
 }

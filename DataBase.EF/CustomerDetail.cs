@@ -25,6 +25,8 @@ namespace DataBase.EF
         public int DealDuration { get; set; }
         public string EmployeeName { get; set; }
 
+        public string FollowUp { get; set; }
+        public bool Discard { get; set; }
         public string ContractType { get; set; }
 
     }

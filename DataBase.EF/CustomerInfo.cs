@@ -7,5 +7,10 @@ namespace DataBase.EF
     public class CustomerInfo : Customer
     {
         public string EmployeeName { get; set; }
+
+        public new string test(int x)
+        {
+            return "CustomerInfo";
+        }
     }
 }
