@@ -61,7 +61,7 @@ namespace AgentManage.Controllers
             else
             {
                 var father = _context.Employees.Where(i => i.Id == value.Pid && i.Status == 0).FirstOrDefault();
-                if(father == null)
+                if (father == null)
                 {
                     return BadRequest(new { message = "领导不存在" });
                 }
@@ -93,10 +93,33 @@ namespace AgentManage.Controllers
             {
                 e.Name = value.Name;
                 e.PassWord = value.Name;
-                e.Role = value.Role;
                 e.Phone = value.Phone;
                 e.Pid = value.Pid;
                 e.Status = value.Status;
+                // 总监
+                if (value.Pid == 0)
+                {
+                    e.Role = Role.Administrator;
+                }
+                else
+                {
+                    var father = _context.Employees.Where(i => i.Id == value.Pid && i.Status == 0).FirstOrDefault();
+                    if (father == null)
+                    {
+                        return BadRequest(new { message = "领导不存在" });
+                    }
+                    else
+                    {
+                        if (father.Role == Role.Administrator)
+                        {
+                            e.Role = Role.Manager;
+                        }
+                        else
+                        {
+                            e.Role = Role.Agent;
+                        }
+                    }
+                }
                 _context.SaveChanges();
                 return Ok(_context.Employees.Where(i => i.Id == id).FirstOrDefault());
             }
@@ -132,7 +155,7 @@ namespace AgentManage.Controllers
             var users = await _context.Employees.Where(i => i.Status == 0).ToListAsync();
             var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Title = i.Name, Role = i.Role }).ToList();
 
-            for(int i= 0;i<admin.Count(); i++)
+            for (int i = 0; i < admin.Count(); i++)
             {
                 BuildRoleTree(users, admin[i]);
             }
