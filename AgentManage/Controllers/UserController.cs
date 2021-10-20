@@ -92,7 +92,7 @@ namespace AgentManage.Controllers
             if (e != null)
             {
                 e.Name = value.Name;
-                e.PassWord = value.Name;
+                e.PassWord = value.PassWord;
                 e.Phone = value.Phone;
                 e.Pid = value.Pid;
                 e.Status = value.Status;
