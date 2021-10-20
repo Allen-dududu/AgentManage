@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 namespace AgentManage.Controllers
 {
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -27,7 +28,7 @@ namespace AgentManage.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            return Ok(await _context.Employees.Where(i => i.Status == 0).ToListAsync());
+            return Ok(await _context.Employees.Where(i => i.Status == 0).Select(i => new { i.Id,i.Name,i.Phone,i.Pid,i.Role,i.Status}).ToListAsync());
         }
 
         // GET api/<UserController>/5
@@ -41,15 +42,25 @@ namespace AgentManage.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] User value)
         {
-            var exist = _context.Employees.Where(i => i.Phone == value.Phone && i.Status == 0).FirstOrDefault();
+            var exist = _context.Employees.Where(i => (i.Phone == value.Phone && i.Status == 0)).FirstOrDefault();
             if (exist != null)
             {
                 return BadRequest(new { message = "账号已存在" });
             }
+            if(_context.Employees.Where(i => i.Name == value.Name && i.Status == 0).Any())
+            {
+                return BadRequest(new { message = "姓名已存在" });
+            }
+            if (Regex.IsMatch(value.PassWord, @"[\u4e00-\u9fa5]")) 
+            {
+                return BadRequest(new { message = "密码不容许有中文" });
+            };
             var employee = new Employee();
             employee.Status = 0;
             employee.Name = value.Name;
-            employee.PassWord = value.PassWord;
+
+            employee.PassWord = MD5Encrypt.GetMD5Password(value.PassWord);
+
             employee.Phone = value.Phone;
             employee.Pid = value.Pid;
 
@@ -129,7 +140,7 @@ namespace AgentManage.Controllers
         [HttpGet("rolesTree")]
         public async Task<IActionResult> RolesTreeAsync()
         {
-            var users = await _context.Employees.Where(i => i.Status == 0).ToListAsync();
+            var users = await _context.Employees.AsQueryable().AsNoTracking().Where(i => i.Status == 0).ToListAsync();
             var admin = users.Where(i => i.Pid == 0).Select(i => new Node { Id = i.Id, Title = i.Name, Role = i.Role }).ToList();
 
             for(int i= 0;i<admin.Count(); i++)
@@ -153,11 +164,16 @@ namespace AgentManage.Controllers
         }
         private void BuildRoleTree(IEnumerable<Employee> users, Node head)
         {
-            var children = users.Where(i => i.Pid == head.Id);
+            var children = users.Where(i => i.Pid == head.Id).ToList();
             if (children != null)
             {
                 var c = children.Select(i => new Node { Id = i.Id, Title = i.Name, Role = i.Role });
                 head.Children = c.ToList();
+                foreach(var child in head.Children)
+                {
+                    var children2 = users.Where(i => i.Pid == child.Id).ToList();
+                    child.Children = children2.Select(i => new Node { Id = i.Id, Title = i.Name, Role = i.Role }).ToList();
+                }
             }
             else
             {
