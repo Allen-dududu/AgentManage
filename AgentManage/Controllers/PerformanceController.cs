@@ -75,6 +75,19 @@ namespace AgentManage.Controllers
                     };
                     result.Add(e);
                 }
+
+                var employeeContract = await _context.Contracts.AsQueryable().AsNoTracking().Where(i => i.EmployeeId == user.Id).ToListAsync();
+                result.Add(new
+                {
+                    EmployeeId = user.Id,
+                    EmployeeName = user.Name,
+                    Month = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    Year = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    All = decimal.Add(employeeContract.Where(i => i.ContractType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                });
             }
             else
             {

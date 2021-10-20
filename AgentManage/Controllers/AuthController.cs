@@ -32,7 +32,7 @@ namespace AgentManage.Controllers
         {
             if (!string.IsNullOrEmpty(logon.Phone) && !string.IsNullOrEmpty(logon.PassWord))
             {
-                var user = _context.Employees.Where(i => i.Phone == logon.Phone && i.PassWord == logon.PassWord).FirstOrDefault();
+                var user = _context.Employees.Where(i => i.Phone == logon.Phone && i.PassWord == MD5Encrypt.GetMD5Password(logon.PassWord)).FirstOrDefault();
                 if (user != null)
                 {
                     // token中的claims用于储存自定义信息，如登录之后的用户id等

@@ -34,18 +34,18 @@ namespace AgentManage.Controllers
             if (user != null)
             {
                 var customers = await _customerRepository.GetCustomers(user.Role, user.Id);
-                customers = customers.Where(i => i.IsOld == false).ToList();
+                //customers = customers.Where(i => i.IsOld == false).ToList();
                 if (isD)
                 {
                     result.AddRange(customers.Where(i => i.Type == CustomerType.D).ToList());
                 }
                 else
                 {
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.UtcNow).ToList());
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
 
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.UtcNow).ToList());
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
 
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.UtcNow).ToList());
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.UtcNow && i.Discard == false).ToList());
 
                 }
                 return Ok(result.OrderByDescending(i => i.UpdateTime));
@@ -58,7 +58,7 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> GetOpenAsync()
         {
             var customers = await _customerRepository.GetCustomers(Role.Administrator, 0);
-            customers = customers.Where(i => i.IsOld == false).ToList();
+            //customers = customers.Where(i => i.IsOld == false).ToList();
             var result = new List<CustomerInfo>();
 
             result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.UtcNow).ToList());
@@ -66,8 +66,23 @@ namespace AgentManage.Controllers
             result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.UtcNow).ToList());
 
             result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) <= DateTime.UtcNow).ToList());
+            result.AddRange(customers.Where(i => i.Discard == true && !result.Any(r => r.Id == i.Id)).ToList());
+
 
             return Ok(result.OrderByDescending(i => i.UpdateTime));
+        }
+        [HttpPost("Customer/{customerId}/Discard")]
+        public async Task<IActionResult> PostDiscard(Guid customerId)
+        {
+            var customer = await _context.Customer.Where(i => i.CustomerId == customerId && i.IsOld == false).FirstOrDefaultAsync();
+            if(customer == null)
+            {
+                return BadRequest(new { message = "客户不正确." });
+            }
+
+            customer.Discard = true;
+            _context.Update(customer);
+            return Ok(customer);
         }
         [HttpPost("Customer/Open")]
         public async Task<IActionResult> AssignOpenAsync(Open value)
@@ -82,7 +97,7 @@ namespace AgentManage.Controllers
             }
 
             var user = await _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
-            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId).OrderByDescending(i => i.Id).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
+            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId && i.IsOld == false).OrderByDescending(i => i.Id).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
 
             customer.IsOld = true;
             customer.UpdateTime = DateTime.UtcNow;
@@ -192,6 +207,7 @@ namespace AgentManage.Controllers
             customer.Type = value.Type;
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
+            customer.FollowUp = value.FollowUp;
 
             _context.Customer.Update(customer);
             _context.SaveChanges();
@@ -350,7 +366,7 @@ namespace AgentManage.Controllers
         private bool CustomerAssignCheckNumber(string customerType)
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
-            var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.EmployeeId == user.Id);
+            var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.EmployeeId == user.Id && i.Discard == false);
             if (customerType == CustomerType.A)
             {
                 if (customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.UtcNow).Count() >= 10)
