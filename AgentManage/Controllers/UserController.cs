@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 namespace AgentManage.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -24,6 +23,7 @@ namespace AgentManage.Controllers
             _context = context;
         }
         // GET: api/<UserController>
+        [Authorize]
 
         [HttpGet]
         public async Task<IActionResult> GetAsync()
@@ -32,6 +32,7 @@ namespace AgentManage.Controllers
         }
 
         // GET api/<UserController>/5
+        [Authorize]
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -39,6 +40,7 @@ namespace AgentManage.Controllers
         }
 
         // POST api/<UserController>
+
         [HttpPost]
         public IActionResult Post([FromBody] User value)
         {
@@ -96,6 +98,7 @@ namespace AgentManage.Controllers
         }
 
         // PUT api/<UserController>/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAsync(int id, [FromBody] User value)
         {
@@ -141,6 +144,7 @@ namespace AgentManage.Controllers
         }
 
         // DELETE api/<UserController>/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
@@ -161,6 +165,7 @@ namespace AgentManage.Controllers
 
         }
         [HttpGet("rolesTree")]
+        [Authorize]
         public async Task<IActionResult> RolesTreeAsync()
         {
             var users = await _context.Employees.AsQueryable().AsNoTracking().Where(i => i.Status == 0).ToListAsync();

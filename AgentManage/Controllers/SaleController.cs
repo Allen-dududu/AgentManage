@@ -115,6 +115,7 @@ namespace AgentManage.Controllers
             newCustomer.IsOld = false;
             newCustomer.Type = value.CustomerType;
             newCustomer.EmployeeId = user.Id;
+            newCustomer.FollowUp = customer.FollowUp;
             _context.Customer.Add(newCustomer);
             _context.SaveChanges();
 
