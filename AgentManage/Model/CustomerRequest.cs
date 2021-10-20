@@ -14,6 +14,8 @@ namespace AgentManage.Model
         public string ContactDetail { get; set; }
 
         public string FollowUp { get; set; }
+
+        public int Version { get; set; }
         [CustomerType]
         public string Type { get; set; }
         //[Required]

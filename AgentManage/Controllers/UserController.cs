@@ -25,10 +25,11 @@ namespace AgentManage.Controllers
         // GET: api/<UserController>
         [Authorize]
 
-        [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        [HttpGet("pageSize/{pageSize}/page/{page}")]
+        public async Task<IActionResult> GetAsync(int pageSize,int page)
         {
-            return Ok(await _context.Employees.Where(i => i.Status == 0).Select(i => new { i.Id,i.Name,i.Phone,i.Pid,i.Role,i.Status}).ToListAsync());
+            return Ok(await _context.Employees.Where(i => i.Status == 0).Select(i => new { i.Id,i.Name,i.Phone,i.Pid,i.Role,i.Status})
+                .Skip(pageSize * page).Take(pageSize).ToListAsync());
         }
 
         // GET api/<UserController>/5

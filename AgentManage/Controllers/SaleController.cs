@@ -26,8 +26,8 @@ namespace AgentManage.Controllers
         }
 
         // GET: api/<SaleController>
-        [HttpGet("Customer")]
-        public async Task<IActionResult> GetAsync(bool isD)
+        [HttpGet("Customer/pageSize/{pageSize}/page/{page}")]
+        public async Task<IActionResult> GetAsync(bool isD, int pageSize, int page)
         {
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             var result = new List<CustomerInfo>();
@@ -48,14 +48,14 @@ namespace AgentManage.Controllers
                     result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.UtcNow && i.Discard == false).ToList());
 
                 }
-                return Ok(result.OrderByDescending(i => i.UpdateTime));
+                return Ok(result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize));
 
             }
             return BadRequest(new { message = "当前用户没找到" });
         }
 
-        [HttpGet("Customer/Open")]
-        public async Task<IActionResult> GetOpenAsync()
+        [HttpGet("Customer/Open/pageSize/{pageSize}/page/{page}")]
+        public async Task<IActionResult> GetOpenAsync(int pageSize, int page)
         {
             var customers = await _customerRepository.GetCustomers(Role.Administrator, 0);
             //customers = customers.Where(i => i.IsOld == false).ToList();
@@ -69,7 +69,7 @@ namespace AgentManage.Controllers
             result.AddRange(customers.Where(i => i.Discard == true && !result.Any(r => r.Id == i.Id)).ToList());
 
 
-            return Ok(result.OrderByDescending(i => i.UpdateTime));
+            return Ok(result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize));
         }
         [HttpPost("Customer/{customerId}/Discard")]
         public async Task<IActionResult> PostDiscard(Guid customerId)
@@ -82,6 +82,8 @@ namespace AgentManage.Controllers
 
             customer.Discard = true;
             _context.Update(customer);
+            _context.SaveChanges();
+
             return Ok(customer);
         }
         [HttpPost("Customer/Open")]
@@ -91,16 +93,23 @@ namespace AgentManage.Controllers
             {
                 return BadRequest(new { message = "客户类型不正确." });
             }
+            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId && i.IsOld == false).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
+
+            if (customer.Version != value.Version)
+            {
+                return BadRequest(new { message = "客户数据已更改，请刷新" });
+            }
+
             if (!CustomerAssignCheckNumber(value.CustomerType))
             {
                 return BadRequest(new { message = "客户数量超出限制" });
             }
 
             var user = await _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
-            var customer = await _context.Customer.Where(i => i.CustomerId == value.CustomerId && i.IsOld == false).OrderByDescending(i => i.Id).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
 
             customer.IsOld = true;
             customer.UpdateTime = DateTime.UtcNow;
+            customer.Version = customer.Version + 1;
             _context.Customer.Update(customer);
             _context.SaveChanges();
             _context.Entry(customer).State = EntityState.Detached;
@@ -116,6 +125,7 @@ namespace AgentManage.Controllers
             newCustomer.Type = value.CustomerType;
             newCustomer.EmployeeId = user.Id;
             newCustomer.FollowUp = customer.FollowUp;
+            newCustomer.Version = 1;
             _context.Customer.Add(newCustomer);
             _context.SaveChanges();
 
@@ -167,6 +177,7 @@ namespace AgentManage.Controllers
             customer.UpdateTime = DateTime.UtcNow;
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
+            customer.Version = 1;
             customer.EmployeeId = GetUserId();
 
             await _context.Customer.AddAsync(customer);
@@ -187,6 +198,10 @@ namespace AgentManage.Controllers
             if (!await ChackAuthAsync(customerId))
             {
                 return Unauthorized(new { message = "没有权限访问此客户" });
+            }
+            if(customer.Version != value.Version)
+            {
+                return BadRequest(new { message = "客户数据已更改，请刷新" });
             }
             var customers = _context.Customer.AsQueryable().AsNoTracking().Where(i => i.IsOld == false && i.EmployeeId == GetUserId());
             if (value.Type == CustomerType.A)
@@ -209,6 +224,7 @@ namespace AgentManage.Controllers
             customer.BusinessLicense = value.BusinessLicense;
             customer.ContactDetail = value.ContactDetail;
             customer.FollowUp = value.FollowUp;
+            customer.Version = customer.Version + 1;
 
             _context.Customer.Update(customer);
             _context.SaveChanges();

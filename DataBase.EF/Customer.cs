@@ -21,6 +21,7 @@ namespace DataBase.EF
         public bool Reviewing { get; set; }
         public string FollowUp { get; set; }
         public bool Discard { get; set; }
+        public int Version { get; set; }
 
         public ICollection<Contract> Contracts { get; set; }
 

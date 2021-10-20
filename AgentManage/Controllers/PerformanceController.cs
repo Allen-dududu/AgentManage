@@ -23,8 +23,8 @@ namespace AgentManage.Controllers
         }
 
         // GET: api/<ReportController>
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpGet("pageSize/{pageSize}/page/{page}")]
+        public async Task<IActionResult> Get(int pageSize, int page)
         {
 
             var user = await _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
@@ -105,7 +105,7 @@ namespace AgentManage.Controllers
                 });
             }
 
-            return Ok(result);
+            return Ok(result.Skip(pageSize * page).Take(pageSize));
         }
 
         private int GetUserId()

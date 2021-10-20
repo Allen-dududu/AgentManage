@@ -10,5 +10,6 @@ namespace AgentManage.Model
         public string CustomerType { get; set; }
         public Guid CustomerId { get; set; }
 
+        public int Version { get; set; }
     }
 }

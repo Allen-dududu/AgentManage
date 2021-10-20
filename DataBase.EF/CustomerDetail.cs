@@ -29,5 +29,7 @@ namespace DataBase.EF
         public bool Discard { get; set; }
         public string ContractType { get; set; }
 
+        public int Version { get; set; }
+
     }
 }

@@ -21,7 +21,7 @@ namespace DataBase.EF
             {
                  var data = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
-c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""IsOld"" = false
@@ -32,13 +32,13 @@ where c.""IsOld"" = false
             {
                 var data1 = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
-c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""EmployeeId"" in (SELECT ""Id""  FROM ""AgentManage"".employee  WHERE ""Pid""  = @employeeId) and  c.""IsOld"" = false ", new { employeeId});
                 var data2 = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
-c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId });
@@ -50,7 +50,7 @@ where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId 
             {
                 var data = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
-c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",
+c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId });
@@ -63,7 +63,7 @@ where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId 
         public async Task<List<CustomerDetail>> GetCustomersById(Guid customerId)
         {
             using IDbConnection db = new NpgsqlConnection(connectString);
-            var result = await db.QueryAsync<CustomerDetail>(@"Select cu.""Id"" , cu.""CustomerId"" ,cu.""BusinessLicense"" , cu.""ContactDetail"" , cu.""Type"" ,cu.""CreateTime"" ,cu.""UpdateTime"" ,cu.""FollowUp"",cu.""Discard"",
+            var result = await db.QueryAsync<CustomerDetail>(@"Select cu.""Id"" , cu.""CustomerId"" ,cu.""BusinessLicense"" , cu.""ContactDetail"" , cu.""Type"" ,cu.""CreateTime"" ,cu.""UpdateTime"" ,cu.""FollowUp"",cu.""Discard"",cu.""Version"",
 cu.""IsOld"", cu.""Reviewing"", c.""DealTime"", c.""Id"" as ""contractId"", c.""DealAmount"", c.""ContractName"",c.""ContractType"", c.""DealDuration"", e.""Name"" as ""EmployeeName""
 From ""AgentManage"".customer cu left join ""AgentManage"".contract c  on cu.""Id"" = c.""CustomerId2"" left join ""AgentManage"".employee e on cu.""EmployeeId"" = e.""Id"" 
 where cu.""CustomerId"" = @customerId ", new { customerId });
