@@ -28,10 +28,10 @@ namespace AgentManage.Controllers
         [HttpGet("pageSize/{pageSize}/page/{page}")]
         public async Task<IActionResult> GetAsync(int pageSize,int page)
         {
-            var result =  _context.Employees.Where(i => i.Status == 0).Select(i => new { i.Id, i.Name, i.Phone, i.Pid, i.Role, i.Status });
+            var result =  _context.Employees.Where(i => i.Status == 0).AsQueryable().AsNoTracking().Select(i => new { i.Id, i.Name, i.Phone, i.Pid, i.Role, i.Status });
             return Ok(new
             {
-                data = result.Skip(pageSize * page).Take(pageSize).ToListAsync(),
+                data = await result.Skip(pageSize * page).Take(pageSize).ToListAsync(),
                 pages = (result.Count() / pageSize) + 1
             });
         }
