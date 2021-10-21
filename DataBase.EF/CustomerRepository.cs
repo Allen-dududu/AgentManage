@@ -26,7 +26,7 @@ c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""IsOld"" = false
 ");
-                result.AddRange(data);
+                if(data!=null) result.AddRange(data);
             }
             else if(role == Role.Manager)
             {
@@ -42,8 +42,8 @@ c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId });
-                result.AddRange(data1);
-                result.AddRange(data2);
+                if (data1 != null) result.AddRange(data1);
+                if (data2 != null) result.AddRange(data2);
 
             }
             else
@@ -54,7 +54,7 @@ c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId });
-                result.AddRange(data);
+                if (data != null) result.AddRange(data);
 
             }
             return result;
