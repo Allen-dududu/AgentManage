@@ -71,7 +71,9 @@ namespace AgentManage.Controllers
             result.AddRange(customers.Where(i => i.Discard == true && !result.Any(r => r.Id == i.Id)).ToList());
 
 
-            return Ok(result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize));
+            return Ok(new {data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
+                pages = (result.Count / pageSize) + 1
+            });
         }
         [HttpPost("Customer/{customerId}/Discard")]
         public async Task<IActionResult> PostDiscard(Guid customerId)
