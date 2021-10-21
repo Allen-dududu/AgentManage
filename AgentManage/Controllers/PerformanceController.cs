@@ -17,9 +17,11 @@ namespace AgentManage.Controllers
     public class PerformanceController : ControllerBase
     {
         private readonly Context _context;
-        public PerformanceController(Context context)
+        private readonly IContractRepository _contractRepository;
+        public PerformanceController(Context context, IContractRepository contractRepository)
         {
             _context = context;
+            _contractRepository = contractRepository;
         }
 
         // GET: api/<ReportController>
@@ -33,10 +35,11 @@ namespace AgentManage.Controllers
                 return BadRequest(new { message = "当前账号不正确" });
             }
             var employees = _context.Employees.AsQueryable().AsNoTracking();
+            var constract = await _contractRepository.GetContracts();
+
             var result = new List<object>();
             if (user.Role == Role.Administrator)
             {
-                var constract = await _context.Contracts.AsQueryable().AsNoTracking().ToListAsync();
 
                 var cons =  constract.GroupBy(i => i.EmployeeId).Select(x => x).ToList();
                 foreach (var c in cons)
@@ -45,11 +48,11 @@ namespace AgentManage.Controllers
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
-                        Month = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
-                            c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)&& i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                        Year = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount) 
-                            , c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                        All = decimal.Add(c.Where(i => i.ContractType == 1).Sum(i => i.DealAmount), c.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        Month = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                            c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day)&& i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        Year = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 1).Sum(i => i.DealAmount) 
+                            , c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        All = decimal.Add(c.Where(i => i.ContractTemplateType == 1).Sum(i => i.DealAmount), c.Where(i => i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                     };
                     result.Add(e);
                 }
@@ -58,8 +61,8 @@ namespace AgentManage.Controllers
             else if (user.Role == Role.Manager)
             {
                 var children = await employees.Where(i => i.Pid == user.Id).AsQueryable().AsNoTracking().ToListAsync();
-                var constract = await _context.Contracts.AsQueryable().AsNoTracking().Where(x => children.Select(i => i.Id).Contains(x.EmployeeId)).ToListAsync();
-                var cons = constract.GroupBy(i => i.EmployeeId).Select(x => x).ToList();
+                var constract2= constract.Where(x => children.Select(i => i.Id).Contains(x.EmployeeId)).ToList();
+                var cons = constract2.GroupBy(i => i.EmployeeId).Select(x => x).ToList();
 
                 foreach (var c in cons)
                 {
@@ -67,41 +70,41 @@ namespace AgentManage.Controllers
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
-                        Month = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
-                            c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                        Year = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount)
-                            , c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                        All = decimal.Add(c.Where(i => i.ContractType == 1).Sum(i => i.DealAmount), c.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        Month = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                            c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        Year = decimal.Add(c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 1).Sum(i => i.DealAmount)
+                            , c.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                        All = decimal.Add(c.Where(i => i.ContractTemplateType == 1).Sum(i => i.DealAmount), c.Where(i => i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                     };
                     result.Add(e);
                 }
 
-                var employeeContract = await _context.Contracts.AsQueryable().AsNoTracking().Where(i => i.EmployeeId == user.Id).ToListAsync();
+                var employeeContract = constract.Where(i => i.EmployeeId == user.Id).ToList();
                 result.Add(new
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
-                    Month = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
-                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                    Year = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount),
-                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                    All = decimal.Add(employeeContract.Where(i => i.ContractType == 1).Sum(i => i.DealAmount),
-                    employeeContract.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    Month = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    Year = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    All = decimal.Add(employeeContract.Where(i => i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                 });
             }
             else
             {
-                var employeeContract = await _context.Contracts.AsQueryable().AsNoTracking().Where(i => i.EmployeeId == user.Id).ToListAsync();
+                var employeeContract = constract.Where(i => i.EmployeeId == user.Id).ToList();
                 result.Add(new
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
-                    Month = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 1).Sum(i => i.DealAmount),
-                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                    Year = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 1).Sum(i => i.DealAmount),
-                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
-                    All = decimal.Add(employeeContract.Where(i => i.ContractType == 1).Sum(i => i.DealAmount),
-                    employeeContract.Where(i => i.ContractType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    Month = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.Day) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    Year = decimal.Add(employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.DealTime >= DateTime.UtcNow.AddDays(-DateTime.UtcNow.DayOfYear) && i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
+                    All = decimal.Add(employeeContract.Where(i => i.ContractTemplateType == 1).Sum(i => i.DealAmount),
+                    employeeContract.Where(i => i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                 });
             }
 

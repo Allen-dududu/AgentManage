@@ -9,5 +9,8 @@ namespace DataBase.EF
     {
         public Task<List<ContractAll>> GetContracts();
 
+        public Task<ContractAll> GetContractById(int id);
+
+
     }
 }

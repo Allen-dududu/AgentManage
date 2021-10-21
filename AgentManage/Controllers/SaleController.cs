@@ -19,10 +19,13 @@ namespace AgentManage.Controllers
     {
         private readonly Context _context;
         private readonly ICustomerRepository _customerRepository;
-        public SaleController(Context context, ICustomerRepository customerRepository)
+
+        private readonly IContractRepository _contractRepository;
+        public SaleController(Context context, ICustomerRepository customerRepository, IContractRepository contractRepository)
         {
             _context = context;
             _customerRepository = customerRepository;
+            _contractRepository = contractRepository;
         }
 
         // GET: api/<SaleController>
@@ -303,6 +306,10 @@ namespace AgentManage.Controllers
         [HttpPost("Customer/{customerId}/Contract")]
         public async Task<IActionResult> PostAsync(Guid customerId, [FromBody] ContractRequest value)
         {
+            if (value.ContractTemplateId <=0)
+            {
+                return BadRequest(new { message = "项目不存在" });
+            }
             var customer = await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
             if (customer == null)
             {
@@ -322,7 +329,9 @@ namespace AgentManage.Controllers
             contract.CustomerId = customer.CustomerId;
             contract.DealAmount = value.DealAmount;
             contract.ContractFile = value.ContractFile;
-            contract.ContractType = value.ContractType;
+            contract.MoneyProof = value.MoneyProof;
+
+            contract.ContractTemplateId = value.ContractTemplateId;
             contract.DealDuration = value.DealDuration;
             contract.EmployeeId = GetUserId();
             contract.Remark = value.Remark;
@@ -345,7 +354,7 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/Contract/{contractId}")]
         public async Task<IActionResult> GetContractAsync(int contractId)
         {
-            var contract = await _context.Contracts.FirstOrDefaultAsync(i => i.Id == contractId);
+            var contract = await _contractRepository.GetContractById(contractId);
             if (contract == null)
             {
                 return NotFound(new { message = "合同没找到" });

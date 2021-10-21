@@ -72,6 +72,7 @@ namespace AgentManage
                 };
             });
             services.AddSingleton<ICustomerRepository>( new CustomerRepository());
+            services.AddSingleton<IContractRepository>(new ContractRepository());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
