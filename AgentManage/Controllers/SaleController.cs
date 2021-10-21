@@ -48,7 +48,9 @@ namespace AgentManage.Controllers
                     result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.UtcNow && i.Discard == false).ToList());
 
                 }
-                return Ok(result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize));
+                return Ok(new { data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
+                    pages = (result.Count / pageSize)+1
+                });
 
             }
             return BadRequest(new { message = "当前用户没找到" });

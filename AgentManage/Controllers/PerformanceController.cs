@@ -105,7 +105,9 @@ namespace AgentManage.Controllers
                 });
             }
 
-            return Ok(result.Skip(pageSize * page).Take(pageSize));
+            return Ok(new { data = result.Skip(pageSize * page).Take(pageSize) ,
+                pages = (result.Count / pageSize) + 1
+            });
         }
 
         private int GetUserId()
