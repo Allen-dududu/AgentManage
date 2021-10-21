@@ -16,7 +16,7 @@ namespace DataBase.EF
         public async Task<List<CustomerInfo>> GetCustomers(string role,int employeeId)
         {
             using IDbConnection db = new NpgsqlConnection(connectString);
-            List<CustomerInfo> result = null;
+            List<CustomerInfo> result = new List<CustomerInfo>();
             if (role == Role.Administrator)
             {
                  var data = await db.QueryAsync<CustomerInfo>(@"Select 
