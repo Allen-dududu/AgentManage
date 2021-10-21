@@ -49,7 +49,7 @@ namespace AgentManage.Controllers
 
                 }
                 return Ok(new { data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
-                    pages = (result.Count / pageSize)+1
+                    count = result.Count
                 });
 
             }
@@ -72,7 +72,7 @@ namespace AgentManage.Controllers
 
 
             return Ok(new {data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
-                pages = (result.Count / pageSize) + 1
+                count = result.Count
             });
         }
         [HttpPost("Customer/{customerId}/Discard")]

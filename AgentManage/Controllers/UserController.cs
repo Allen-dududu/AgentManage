@@ -32,8 +32,8 @@ namespace AgentManage.Controllers
             return Ok(new
             {
                 data = await result.Skip(pageSize * page).Take(pageSize).ToListAsync(),
-                pages = (result.Count() / pageSize) + 1
-            });
+                count = await result.CountAsync()
+            });;
         }
 
         // GET api/<UserController>/5

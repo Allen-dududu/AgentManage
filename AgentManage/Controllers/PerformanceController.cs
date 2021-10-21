@@ -106,7 +106,7 @@ namespace AgentManage.Controllers
             }
 
             return Ok(new { data = result.Skip(pageSize * page).Take(pageSize) ,
-                pages = (result.Count / pageSize) + 1
+                count = result.Count
             });
         }
 
