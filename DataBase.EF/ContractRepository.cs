@@ -18,10 +18,10 @@ namespace DataBase.EF
             using IDbConnection db = new NpgsqlConnection(connectString);
             var result = await db.QueryFirstOrDefaultAsync<ContractAll>(@"SELECT c.""Id"", c.""DealTime"", c.""DealAmount"", c.""Remark"", 
 c.""ContractName"", c.""ContractFile"",  c.""ContractFile"",c.""DealDuration"", c.""AfterSale"", c.""EmployeeId"", c.""CustomerId"", c.""CustomerId2"",
-ct.""ContractTemplateType"", ct.""ContractTemplateAmount"", ct.""ContractTemplateName"", ct.""ContractTemplateFile"", ct.""ContractTemplateDetail"",
+ct.""ContractType"" as ContractTemplateType, ct.""ContractAmount"" as ContractTemplateAmount, ct.""ContractName"" as ContractTemplateName, ct.""ContractFile"" as ContractTemplateFile, ct.""ContractDetail"" as ContractTemplateDetail,
 e.""Name"" as EmployeeName 
 FROM ""AgentManage"".contract c left join ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
-left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" and c.""Id"" = @id",new { id });
+left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" and c.""Id"" = @id", new { id });
             return result;
         }
 
@@ -30,7 +30,7 @@ left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct."
             using IDbConnection db = new NpgsqlConnection(connectString);
             var result = await db.QueryAsync<ContractAll>(@"SELECT c.""Id"", c.""DealTime"", c.""DealAmount"", c.""Remark"", 
 c.""ContractName"", c.""ContractFile"",  c.""ContractFile"",c.""DealDuration"", c.""AfterSale"", c.""EmployeeId"", c.""CustomerId"", c.""CustomerId2"",
-ct.""ContractTemplateType"", ct.""ContractTemplateAmount"", ct.""ContractTemplateName"", ct.""ContractTemplateFile"", ct.""ContractTemplateDetail"",
+ct.""ContractType"" as ContractTemplateType, ct.""ContractAmount"" as ContractTemplateAmount, ct.""ContractName"" as ContractTemplateName, ct.""ContractFile"" as ContractTemplateFile, ct.""ContractDetail"" as ContractTemplateDetail,
 e.""Name"" as EmployeeName
 FROM ""AgentManage"".contract c left join ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" ");

@@ -46,5 +46,25 @@ namespace AgentManage.Controllers
 
             return Ok(new { filePath = Path.Combine(type, typeName, file.FileName) });
         }
+
+        [HttpDelete("{fileName}")]
+        public IActionResult Delete(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return BadRequest(new { message = "文件名不能为空" });
+            }
+
+            var fullPath = Path.Combine(path, fileName);
+
+
+            // If file with same name exists delete it
+            if (System.IO.File.Exists(fileName))
+            {
+                System.IO.File.Delete(fullPath);
+            }
+
+            return Ok(new { message = "删除成功" });
+        }
     }
 }
