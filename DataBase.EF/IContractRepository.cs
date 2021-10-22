@@ -11,6 +11,7 @@ namespace DataBase.EF
 
         public Task<ContractAll> GetContractById(int id);
 
+        public Task<ContractAll> GetContractByCustomerId(Guid CustomerId);
 
     }
 }

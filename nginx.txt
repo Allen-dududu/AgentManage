@@ -1,0 +1,14 @@
+        client_max_body_size 64M;
+        location / {
+                  root /home/liu/code/AgentManage/dist;
+                index  index.html;
+
+}
+        location /file/{
+                alias /home/files/;
+}
+        location /api/ {
+                proxy_pass http://localhost:8080;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+        }

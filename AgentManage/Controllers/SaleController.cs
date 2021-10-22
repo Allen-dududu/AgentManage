@@ -302,6 +302,19 @@ namespace AgentManage.Controllers
             return Ok(await customers.Where(i => i.Reviewing == true).ToListAsync());
         }
 
+        [HttpGet("Customer/{customerId}/Contract")]
+        public async Task<IActionResult> GetContractAsync(Guid customerId)
+        {
+            var customer = await _context.Customer.FirstOrDefaultAsync(i => i.CustomerId == customerId && i.IsOld == false);
+            if (customer == null)
+            {
+                return NotFound(new { message = "当客户没找到" });
+            }
+
+            var contracts = await _contractRepository.GetContractByCustomerId(customerId);
+
+            return Ok(contracts);
+        }
 
         [HttpPost("Customer/{customerId}/Contract")]
         public async Task<IActionResult> PostAsync(Guid customerId, [FromBody] ContractRequest value)

@@ -64,8 +64,8 @@ where c.""EmployeeId"" = @employeeId and c.""IsOld"" = false", new { employeeId 
         {
             using IDbConnection db = new NpgsqlConnection(connectString);
             var result = await db.QueryAsync<CustomerDetail>(@"Select cu.""Id"" , cu.""CustomerId"" ,cu.""BusinessLicense"" , cu.""ContactDetail"" , cu.""Type"" ,cu.""CreateTime"" ,cu.""UpdateTime"" ,cu.""FollowUp"",cu.""Discard"",cu.""Version"",
-cu.""IsOld"", cu.""Reviewing"", c.""DealTime"", c.""Id"" as ""contractId"", c.""DealAmount"", c.""ContractName"", c.""DealDuration"", e.""Name"" as ""EmployeeName""
-From ""AgentManage"".customer cu left join ""AgentManage"".contract c  on cu.""Id"" = c.""CustomerId2"" left join ""AgentManage"".employee e on cu.""EmployeeId"" = e.""Id"" 
+cu.""IsOld"", cu.""Reviewing"", e.""Name"" as ""EmployeeName""
+From ""AgentManage"".customer cu left join ""AgentManage"".employee e on cu.""EmployeeId"" = e.""Id"" 
 where cu.""CustomerId"" = @customerId ", new { customerId });
             return result.ToList();
         }
