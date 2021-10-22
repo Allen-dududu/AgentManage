@@ -363,6 +363,42 @@ namespace AgentManage.Controllers
             return Ok(contract);
         }
 
+        [HttpDelete("Customer/Contract/{contractId}")]
+        public async Task<IActionResult> DeleteContractAsync(int contractId)
+        {
+            var contract = await _context.Contracts.Where(i => i.Id == contractId).FirstOrDefaultAsync();
+            if (contract == null)
+            {
+                return NotFound(new { message = "合同没找到" });
+            }
+            _context.Remove(contract);
+            _context.SaveChanges();
+            return Ok(new { message = "删除成功"});
+        }
+
+        [HttpPut("Customer/Contract/{contractId}")]
+        public async Task<IActionResult> PutContractAsync(int contractId, [FromBody] ContractRequest value)
+        {
+            var contract = await _context.Contracts.Where(i => i.Id == contractId).FirstOrDefaultAsync();
+            if (contract == null)
+            {
+                return NotFound(new { message = "合同没找到" });
+            }
+
+            contract.ContractName = value.ContractName;
+            contract.DealAmount = value.DealAmount;
+            contract.ContractFile = value.ContractFile;
+            contract.MoneyProof = value.MoneyProof;
+
+            contract.ContractTemplateId = value.ContractTemplateId;
+            contract.DealDuration = value.DealDuration;
+            contract.Remark = value.Remark;
+            contract.AfterSale = value.AfterSale;
+
+            _context.SaveChanges();
+            return Ok(new { message = "删除成功" });
+        }
+
         private int GetUserId()
         {
             var user = User.Claims.FirstOrDefault(c => c.Type == "userId").Value;
