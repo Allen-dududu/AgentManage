@@ -16,9 +16,14 @@ namespace AgentManage.Controllers
     {
         private readonly string path = Environment.GetEnvironmentVariable("FilePath");
         [HttpPost]
-        public IActionResult Upload(IFormFile file,string type,string typeId)
+        public IActionResult Upload(IFormFile file,string type,string typeName)
         {
-            var fullPath = Path.Combine(path, type, typeId);
+            if(file == null)
+            {
+                return BadRequest(new { message = "文件为空" });
+            }
+
+            var fullPath = Path.Combine(path, type, typeName);
             if (!Directory.Exists(fullPath))
             {
                 Directory.CreateDirectory(fullPath);
@@ -39,7 +44,7 @@ namespace AgentManage.Controllers
                 uploadedFile.CopyTo(localFile);
             }
 
-            return Ok(new { filePath = Path.Combine(type, typeId, file.FileName) });
+            return Ok(new { filePath = Path.Combine(type, typeName, file.FileName) });
         }
     }
 }
