@@ -13,16 +13,16 @@ namespace DataBase.EF
     {
         private readonly string connectString = Environment.GetEnvironmentVariable("DapperConnect");
 
-        public async Task<ContractAll> GetContractByCustomerId(Guid customerId)
+        public async Task<List<ContractAll>> GetContractByCustomerId(Guid customerId)
         {
             using IDbConnection db = new NpgsqlConnection(connectString);
-            var result = await db.QueryFirstOrDefaultAsync<ContractAll>(@"SELECT c.""Id"", c.""DealTime"", c.""DealAmount"", c.""Remark"", 
+            var result = await db.QueryAsync<ContractAll>(@"SELECT c.""Id"", c.""DealTime"", c.""DealAmount"", c.""Remark"", 
 c.""ContractName"", c.""ContractFile"",  c.""ContractFile"",c.""DealDuration"", c.""AfterSale"", c.""EmployeeId"", c.""CustomerId"", c.""CustomerId2"",
 ct.""ContractType"" as ContractTemplateType, ct.""ContractAmount"" as ContractTemplateAmount, ct.""ContractName"" as ContractTemplateName, ct.""ContractFile"" as ContractTemplateFile, ct.""ContractDetail"" as ContractTemplateDetail,
 e.""Name"" as EmployeeName 
 FROM ""AgentManage"".contract c left join ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" and c.""CustomerId"" = @customerId", new { customerId });
-            return result;
+            return result.ToList();
         }
 
         public async Task<ContractAll> GetContractById(int id)
