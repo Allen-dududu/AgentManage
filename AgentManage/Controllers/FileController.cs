@@ -47,7 +47,7 @@ namespace AgentManage.Controllers
             return Ok(new { filePath = Path.Combine(type, typeName, file.FileName) });
         }
 
-        [HttpDelete("{fileName}")]
+        [HttpDelete]
         public IActionResult Delete(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
