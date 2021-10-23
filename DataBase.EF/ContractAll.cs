@@ -8,7 +8,10 @@ namespace DataBase.EF
     {
         public int Id { get; set; }
         public DateTime DealTime { get; set; }
-
+        /// <summary>
+        /// 公司名
+        /// </summary>
+        public string BusinessLicense { get; set; }
         public Decimal DealAmount { get; set; }
         public string Remark { get; set; }
         public string ContractName { get; set; }

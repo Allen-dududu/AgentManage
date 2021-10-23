@@ -1,38 +1,81 @@
-CREATE TABLE "AgentManage".Employee(
-   Id SERIAL PRIMARY KEY   NOT NULL,
-   Name           TEXT    NOT NULL,
-   Phone            TEXT     NOT NULL,
-   PassWord       text  NOT NULL,
-   Role         text NOT null,
-   Status       int  NOT null,
-   Pid          int
-)
+-- "AgentManage".contracttemplate definition
+
+-- Drop table
+
+-- DROP TABLE "AgentManage".contracttemplate;
+
+CREATE TABLE "AgentManage".contracttemplate (
+	"Id" serial4 NOT NULL,
+	"ContractAmount" numeric NOT NULL,
+	"ContractName" text NOT NULL,
+	"ContractFile" text NULL,
+	"ContractDetail" text NULL,
+	"ContractType" int4 NOT NULL,
+	"Status" int4 NOT NULL,
+	CONSTRAINT contracttemplate_pkey PRIMARY KEY ("Id")
+);
+
+-- "AgentManage".contract definition
+
+-- Drop table
+
+-- DROP TABLE "AgentManage".contract;
+
+CREATE TABLE "AgentManage".contract (
+	"Id" serial4 NOT NULL,
+	"DealTime" timestamp NOT NULL,
+	"DealAmount" numeric NOT NULL,
+	"Remark" text NULL,
+	"ContractName" text NULL,
+	"ContractFile" text NULL,
+	"DealDuration" int4 NULL,
+	"AfterSale" text NULL,
+	"EmployeeId" int4 NOT NULL,
+	"CustomerId" uuid NOT NULL,
+	"CustomerId2" int4 NULL,
+	"MoneyProof" text NULL,
+	"ContractTemplateId" int4 NOT NULL,
+	CONSTRAINT contract_pkey PRIMARY KEY ("Id")
+);
+
+-- "AgentManage".customer definition
+
+-- Drop table
+
+-- DROP TABLE "AgentManage".customer;
+
+CREATE TABLE "AgentManage".customer (
+	"Id" serial4 NOT NULL,
+	"CustomerId" uuid NOT NULL,
+	"BusinessLicense" text NOT NULL,
+	"ContactDetail" text NOT NULL,
+	"Type" text NOT NULL,
+	"EmployeeId" int4 NOT NULL,
+	"CreateTime" timestamp NOT NULL,
+	"UpdateTime" timestamp NOT NULL,
+	"IsOld" bool NOT NULL,
+	"Informant" text NULL,
+	"Reviewing" bool NULL,
+	"FollowUp" text NULL,
+	"Discard" bool NULL DEFAULT false,
+	"Version" int4 NOT NULL,
+	CONSTRAINT customer_pkey PRIMARY KEY ("Id")
+);
 
 
-CREATE TABLE "AgentManage".Customer(
-	"Id" SERIAL PRIMARY KEY   NOT NULL,
-   "CustomerId" uuid   NOT NULL,
-   "BusinessLicense"           TEXT    NOT NULL,
-   "ContactDetail"           Text NOT NULL,
-   "Type"       text  NOT NULL,
-   "EmployeeId"        int NOT null,
-   "CreateTime"       timestamp   NOT null,
-   "UpdateTime"       timestamp   NOT null,
-   "IsOld"          boolean not null,
-   "Informant" text ,
-   "Reviewing" boolean
-)
+-- "AgentManage".employee definition
 
-CREATE TABLE "AgentManage".Contract(
+-- Drop table
 
-   "Id" SERIAL PRIMARY KEY   NOT NULL,
-   "DealTime"  timestamp NOT NULL,
-   "DealAmount" NUMERIC  NOT NULL,
-   "Remark"  text,
-   "ContractName" text NOT NULL,
-   "ContractFile" text ,
-   "DealDuration" int,
-   "AfterSale" text,
-   "EmployeeId" int NOT NULL,
-   "CustomerId" uuid  NOT NULL
-)
+-- DROP TABLE "AgentManage".employee;
+
+CREATE TABLE "AgentManage".employee (
+	"Id" int4 NOT NULL DEFAULT nextval('"AgentManage".employee_id_seq'::regclass),
+	"Name" text NOT NULL,
+	"Phone" text NOT NULL,
+	"PassWord" text NOT NULL,
+	"Role" text NOT NULL,
+	"Status" int4 NOT NULL,
+	"Pid" int4 NULL,
+	CONSTRAINT employee_pkey PRIMARY KEY ("Id")
+);
