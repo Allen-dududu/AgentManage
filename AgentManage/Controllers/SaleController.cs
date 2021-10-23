@@ -29,29 +29,34 @@ namespace AgentManage.Controllers
         }
 
         // GET: api/<SaleController>
-        [HttpGet("Customer/pageSize/{pageSize}/page/{page}")]
-        public async Task<IActionResult> GetAsync(bool isD, int pageSize, int page)
+        [HttpGet("Customer/pageSize/{pageSize}/page/{page}/type/{type}/employeeName/{employeeName}")]
+        public async Task<IActionResult> GetAsync(int pageSize, int page, string type, string employeeName)
         {
+            var types = type.Split(',');
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             var result = new List<CustomerInfo>();
             if (user != null)
             {
                 var customers = await _customerRepository.GetCustomers(user.Role, user.Id);
                 //customers = customers.Where(i => i.IsOld == false).ToList();
-                if (isD)
+                if (types.Contains(CustomerType.D))
                 {
                     result.AddRange(customers.Where(i => i.Type == CustomerType.D).ToList());
                 }
-                else
+                if (types.Contains(CustomerType.A))
                 {
                     result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
-
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
-
-                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(3) > DateTime.UtcNow && i.Discard == false).ToList());
-
                 }
-                return Ok(new { data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
+                if (types.Contains(CustomerType.B))
+                {
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
+                }
+                if (types.Contains(CustomerType.C))
+                {
+                    result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
+                }
+
+                return Ok(new { data = result.Where(i => i.EmployeeName.StartsWith(employeeName)).OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
                     count = result.Count
                 });
 

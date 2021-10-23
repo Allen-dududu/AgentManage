@@ -102,16 +102,38 @@ namespace AgentManage.Controllers
             return Ok(_context.Employees.Where(i => i.Phone == value.Phone).FirstOrDefault());
         }
 
+
+        [HttpPost("id/{id}/ChangePassword")]
+        public async Task<IActionResult> ChangePasswordAsync(int id,string password)
+        {
+            if (Regex.IsMatch(password, @"[\u4e00-\u9fa5]"))
+            {
+                return BadRequest(new { message = "密码不容许有中文" });
+            };
+
+            var e = await _context.Employees.Where(i => i.Id == id).FirstOrDefaultAsync();
+            if (e != null)
+            {
+                e.PassWord = MD5Encrypt.GetMD5Password(password);
+               
+                _context.SaveChanges();
+                return Ok(_context.Employees.Where(i => i.Id == id).FirstOrDefault());
+            }
+            else
+            {
+                return NotFound(new { message = "未找到此用户" });
+            }
+        }
+
         // PUT api/<UserController>/5
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAsync(int id, [FromBody] User value)
+        public async Task<IActionResult> PutAsync(int id, [FromBody] UserUpdate value)
         {
             var e = await _context.Employees.Where(i => i.Id == id).FirstOrDefaultAsync();
             if (e != null)
             {
                 e.Name = value.Name;
-                e.PassWord = value.PassWord;
                 e.Phone = value.Phone;
                 e.Pid = value.Pid;
                 e.Status = value.Status;

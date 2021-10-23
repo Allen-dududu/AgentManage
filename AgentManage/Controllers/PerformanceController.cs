@@ -25,8 +25,8 @@ namespace AgentManage.Controllers
         }
 
         // GET: api/<ReportController>
-        [HttpGet("pageSize/{pageSize}/page/{page}")]
-        public async Task<IActionResult> Get(int pageSize, int page)
+        [HttpGet("pageSize/{pageSize}/page/{page}/employeeName/{employeeName}")]
+        public async Task<IActionResult> Get(int pageSize, int page, string employeeName)
         {
 
             var user = await _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefaultAsync();
@@ -37,14 +37,14 @@ namespace AgentManage.Controllers
             var employees = _context.Employees.AsQueryable().AsNoTracking();
             var constract = await _contractRepository.GetContracts();
 
-            var result = new List<object>();
+            var result = new List<Perfomace>();
             if (user.Role == Role.Administrator)
             {
 
                 var cons =  constract.GroupBy(i => i.EmployeeId).Select(x => x).ToList();
                 foreach (var c in cons)
                 {
-                    var e = new
+                    var e = new Perfomace
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
@@ -66,7 +66,7 @@ namespace AgentManage.Controllers
 
                 foreach (var c in cons)
                 {
-                    var e = new
+                    var e = new Perfomace
                     {
                         EmployeeId = c.Key,
                         EmployeeName = employees.Where(i => i.Id == c.Key).FirstOrDefault()?.Name,
@@ -80,7 +80,7 @@ namespace AgentManage.Controllers
                 }
 
                 var employeeContract = constract.Where(i => i.EmployeeId == user.Id).ToList();
-                result.Add(new
+                result.Add(new Perfomace
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
@@ -95,7 +95,7 @@ namespace AgentManage.Controllers
             else
             {
                 var employeeContract = constract.Where(i => i.EmployeeId == user.Id).ToList();
-                result.Add(new
+                result.Add(new Perfomace
                 {
                     EmployeeId = user.Id,
                     EmployeeName = user.Name,
@@ -108,11 +108,19 @@ namespace AgentManage.Controllers
                 });
             }
 
-            return Ok(new { data = result.Skip(pageSize * page).Take(pageSize) ,
+            return Ok(new { data = result.Where(i=>i.EmployeeName.StartsWith(employeeName)).Skip(pageSize * page).Take(pageSize) ,
                 count = result.Count
             });
         }
+        private class Perfomace
+        {
+            public int EmployeeId { get; set; }
+            public string EmployeeName { get; set; }
+            public decimal Month { get; set; }
+            public decimal Year { get; set; }
+            public decimal All { get; set; }
 
+        }
         private int GetUserId()
         {
             var user = User.Claims.FirstOrDefault(c => c.Type == "userId").Value;
