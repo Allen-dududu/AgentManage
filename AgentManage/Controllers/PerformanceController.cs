@@ -25,7 +25,7 @@ namespace AgentManage.Controllers
         }
 
         // GET: api/<ReportController>
-        [HttpGet("pageSize/{pageSize}/page/{page}/employeeName/{employeeName}")]
+        [HttpGet("pageSize/{pageSize}/page/{page}")]
         public async Task<IActionResult> Get(int pageSize, int page, string employeeName)
         {
 
@@ -106,6 +106,11 @@ namespace AgentManage.Controllers
                     All = decimal.Add(employeeContract.Where(i => i.ContractTemplateType == 1).Sum(i => i.DealAmount),
                     employeeContract.Where(i => i.ContractTemplateType == 2).Sum(i => i.DealAmount) / new decimal(2)),
                 });
+            }
+
+            if (!string.IsNullOrWhiteSpace(employeeName))
+            {
+                result = result.Where(i => i.EmployeeName.StartsWith(employeeName)).ToList();
             }
 
             return Ok(new { data = result.Where(i=>i.EmployeeName.StartsWith(employeeName)).Skip(pageSize * page).Take(pageSize) ,

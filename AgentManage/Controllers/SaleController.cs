@@ -29,7 +29,7 @@ namespace AgentManage.Controllers
         }
 
         // GET: api/<SaleController>
-        [HttpGet("Customer/pageSize/{pageSize}/page/{page}/type/{type}/employeeName/{employeeName}")]
+        [HttpGet("Customer/pageSize/{pageSize}/page/{page}")]
         public async Task<IActionResult> GetAsync(int pageSize, int page, string type, string employeeName)
         {
             var types = type.Split(',');
@@ -56,7 +56,11 @@ namespace AgentManage.Controllers
                     result.AddRange(customers.Where(i => i.Type == CustomerType.C && i.UpdateTime.AddDays(10) > DateTime.UtcNow && i.Discard == false).ToList());
                 }
 
-                return Ok(new { data = result.Where(i => i.EmployeeName.StartsWith(employeeName)).OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
+                if (!string.IsNullOrWhiteSpace(employeeName)){
+                    result = result.Where(i => i.EmployeeName.StartsWith(employeeName)).ToList();
+                }
+
+                return Ok(new { data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
                     count = result.Count
                 });
 
