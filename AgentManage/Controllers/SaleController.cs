@@ -296,7 +296,7 @@ namespace AgentManage.Controllers
         public async Task<IActionResult> GetReviewAsync()
         {
             var user = _context.Employees.AsQueryable().AsNoTracking().Where(i => i.Id == GetUserId()).FirstOrDefault();
-            var customers = _context.Customer.Where(i => i.IsOld == false);
+            var customers = _context.Customer.Where(i => i.IsOld == false && i.Reviewing == true);
             if (user == null)
             {
                 return BadRequest(new { message = "当前用户没找到" });
@@ -308,14 +308,32 @@ namespace AgentManage.Controllers
             else if (user.Role == Role.Manager)
             {
                 var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
-                customers = customers.Where(i => children.Contains(i.EmployeeId));
+                customers = customers.Where(i => children.Contains(i.EmployeeId) || i.EmployeeId == user.Id);
             }
             else
             {
                 customers = customers.Where(i => i.EmployeeId == user.Id);
             }
 
-            return Ok(await customers.Where(i => i.Reviewing == true).ToListAsync());
+            var query = from c in customers
+                        join e in _context.Employees on c.EmployeeId equals e.Id into ce
+                        from x in ce.DefaultIfEmpty()
+                        select new
+                        {
+                            Id = c.Id,
+                            CustomerId = c.CustomerId,
+                            Type = c.Type,
+                            CreateTime = c.CreateTime,
+                            UpdateTime = c.UpdateTime,
+                            FollowUp = c.FollowUp,
+                            Version = c.Version,
+                            BusinessLicense = c.BusinessLicense,
+                            ContactDetail = c.ContactDetail,
+                            EmployeeId = c.EmployeeId,
+                            EmployeeName = x.Name,
+                        };
+
+            return Ok(await query.ToListAsync());
         }
 
         [HttpGet("Customer/{customerId}/Contract")]
