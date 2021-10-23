@@ -113,7 +113,7 @@ namespace AgentManage.Controllers
                 result = result.Where(i => i.EmployeeName.StartsWith(employeeName)).ToList();
             }
 
-            return Ok(new { data = result.Where(i=>i.EmployeeName.StartsWith(employeeName)).Skip(pageSize * page).Take(pageSize) ,
+            return Ok(new { data = result.Skip(pageSize * page).Take(pageSize) ,
                 count = result.Count
             });
         }
