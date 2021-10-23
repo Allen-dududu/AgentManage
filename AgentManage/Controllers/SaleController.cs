@@ -308,7 +308,7 @@ namespace AgentManage.Controllers
             else if (user.Role == Role.Manager)
             {
                 var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
-                customers = customers.Where(i => children.Contains(i.EmployeeId) || i.EmployeeId == user.Id);
+                customers = customers.Where(i => children.Contains(i.EmployeeId));
             }
             else
             {
