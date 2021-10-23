@@ -32,6 +32,11 @@ namespace AgentManage.Controllers
         [HttpGet("Customer/pageSize/{pageSize}/page/{page}")]
         public async Task<IActionResult> GetAsync(int pageSize, int page, string type, string employeeName)
         {
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                return BadRequest(new {message = "至少选择一种客户类型"})；
+            }
+
             var types = type.Split(',');
             var user = _context.Employees.Where(i => i.Id == GetUserId()).AsQueryable().AsNoTracking().FirstOrDefault();
             var result = new List<CustomerInfo>();
