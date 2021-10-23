@@ -37,6 +37,9 @@ namespace AgentManage.Controllers
             var employees = _context.Employees.AsQueryable().AsNoTracking().Where(i =>i.Status ==0);
             var constract = await _contractRepository.GetContracts();
 
+            //过滤删除用户
+            constract = constract.Where(i => employees.Select(x => x.Id).Contains(i.EmployeeId)).ToList();
+
             var result = new List<Perfomace>();
             if (user.Role == Role.Administrator)
             {
