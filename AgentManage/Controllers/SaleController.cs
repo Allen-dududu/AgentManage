@@ -65,6 +65,8 @@ namespace AgentManage.Controllers
                     result = result.Where(i => i.EmployeeName.StartsWith(employeeName)).ToList();
                 }
 
+                result = result.Where(i => i.Reviewing == false).ToList();
+
                 return Ok(new { data = result.OrderByDescending(i => i.UpdateTime).Skip(pageSize * page).Take(pageSize),
                     count = result.Count
                 });
@@ -79,7 +81,7 @@ namespace AgentManage.Controllers
             var customers = await _customerRepository.GetCustomers(Role.Administrator, 0);
             //customers = customers.Where(i => i.IsOld == false).ToList();
             var result = new List<CustomerInfo>();
-
+            customers = customers.Where(i => i.Reviewing == false).ToList();
             result.AddRange(customers.Where(i => i.Type == CustomerType.A && i.UpdateTime.AddDays(10) <= DateTime.UtcNow).ToList());
 
             result.AddRange(customers.Where(i => i.Type == CustomerType.B && i.UpdateTime.AddDays(10) <= DateTime.UtcNow).ToList());
@@ -306,7 +308,7 @@ namespace AgentManage.Controllers
             else if (user.Role == Role.Manager)
             {
                 var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
-                customers = customers.Where(i => children.Contains(i.EmployeeId));
+                customers = customers.Where(i => children.Contains(i.EmployeeId) || i.EmployeeId == user.Id);
             }
             else
             {
