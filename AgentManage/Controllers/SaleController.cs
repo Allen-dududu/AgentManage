@@ -346,7 +346,7 @@ namespace AgentManage.Controllers
 
             contract.ContractTemplateId = value.ContractTemplateId;
             contract.DealDuration = value.DealDuration;
-            contract.EmployeeId = GetUserId();
+            contract.EmployeeId = customer.EmployeeId;
             contract.Remark = value.Remark;
             contract.AfterSale = value.AfterSale;
             contract.DealTime = DateTime.UtcNow;
