@@ -34,7 +34,7 @@ namespace AgentManage.Controllers
             {
                 return BadRequest(new { message = "当前账号不正确" });
             }
-            var employees = _context.Employees.AsQueryable().AsNoTracking();
+            var employees = _context.Employees.AsQueryable().AsNoTracking().Where(i =>i.Status ==0);
             var constract = await _contractRepository.GetContracts();
 
             var result = new List<Perfomace>();
