@@ -21,7 +21,7 @@ c.""ContractName"", c.""ContractFile"",  c.""ContractFile"",c.""DealDuration"", 
 ct.""ContractType"" as ContractTemplateType, ct.""ContractAmount"" as ContractTemplateAmount, ct.""ContractName"" as ContractTemplateName, ct.""ContractFile"" as ContractTemplateFile, ct.""ContractDetail"" as ContractTemplateDetail,
 e.""Name"" as EmployeeName 
 FROM ""AgentManage"".contract c left join ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
-left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" and c.""CustomerId"" = @customerId", new { customerId });
+left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" where c.""CustomerId"" = @customerId ", new { customerId });
             return result.ToList();
         }
 
@@ -33,7 +33,7 @@ c.""ContractName"", c.""ContractFile"",  c.""ContractFile"",c.""DealDuration"", 
 ct.""ContractType"" as ContractTemplateType, ct.""ContractAmount"" as ContractTemplateAmount, ct.""ContractName"" as ContractTemplateName, ct.""ContractFile"" as ContractTemplateFile, ct.""ContractDetail"" as ContractTemplateDetail,
 e.""Name"" as EmployeeName 
 FROM ""AgentManage"".contract c left join ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
-left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" and c.""Id"" = @id", new { id });
+left join ""AgentManage"".contracttemplate ct on c.""ContractTemplateId"" = ct.""Id"" where c.""Id"" = @id", new { id });
             return result;
         }
 
