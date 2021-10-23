@@ -34,7 +34,7 @@ namespace AgentManage.Controllers
         {
             if (string.IsNullOrWhiteSpace(type))
             {
-                return BadRequest(new {message = "至少选择一种客户类型"})；
+                return BadRequest(new { message = "至少选择一种客户类型" });
             }
 
             var types = type.Split(',');
