@@ -431,7 +431,7 @@ namespace AgentManage.Controllers
             {
                 var children = _context.Employees.Where(i => i.Pid == user.Id).Select(i => i.Id).ToList();
 
-                var t = await customers.Where(i => children.Contains(i.EmployeeId)).ToListAsync();
+                var t = await customers.Where(i => children.Contains(i.EmployeeId) || i.EmployeeId == user.Id).ToListAsync();
                 return t.Any();
             }
             else
