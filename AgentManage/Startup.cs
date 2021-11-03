@@ -31,12 +31,15 @@ namespace AgentManage
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Console.WriteLine(Configuration["DapperConnect"]);
+            Console.WriteLine("test");
+
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddControllers();
             services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
             services.AddDbContext<Context>(options =>
-             options.UseNpgsql(Environment.GetEnvironmentVariable("Context")));
+             options.UseNpgsql(Configuration["Context"]));
             // Documentation can be accessed with http://localhost:5002/swagger/ui/index.html
             //注册Swagger生成器，定义一个和多个Swagger 文档
             services.AddSwaggerGen(c =>
@@ -52,7 +55,7 @@ namespace AgentManage
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                var t = Environment.GetEnvironmentVariable("Issure");
+                var t = Configuration["Issure"];
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     // 验证接收者
@@ -64,20 +67,21 @@ namespace AgentManage
                     // 验证秘钥
                     ValidateIssuerSigningKey = true,
                     // 读配置Issure
-                    ValidIssuer = Environment.GetEnvironmentVariable("Issure"),
+                    ValidIssuer = Configuration["Issure"],
                     // 读配置Audience
-                    ValidAudience = Environment.GetEnvironmentVariable("Audience"),
+                    ValidAudience = Configuration["Audience"],
                     // 设置生成token的秘钥
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecurityKey")))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecurityKey"]))
                 };
             });
-            services.AddSingleton<ICustomerRepository>( new CustomerRepository());
-            services.AddSingleton<IContractRepository>(new ContractRepository());
+            services.AddSingleton<ICustomerRepository, CustomerRepository>();
+            services.AddSingleton<IContractRepository, ContractRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
             app.UseMiddleware(typeof(ExceptionHandlerMidlleware));
 
             if (env.IsDevelopment())

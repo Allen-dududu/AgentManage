@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -12,30 +13,37 @@ namespace DataBase.EF
 {
     public class CustomerRepository : ICustomerRepository
     {
-        private readonly string connectString = Environment.GetEnvironmentVariable("DapperConnect");
-        public async Task<List<CustomerInfo>> GetCustomers(string role,int employeeId)
+        public IConfiguration Configuration { get; }
+        private readonly string connectString;
+
+        public CustomerRepository(IConfiguration config)
+        {
+            Configuration = config;
+            connectString = Configuration["DapperConnect"];
+        }
+        public async Task<List<CustomerInfo>> GetCustomers(string role, int employeeId)
         {
             using IDbConnection db = new NpgsqlConnection(connectString);
             List<CustomerInfo> result = new List<CustomerInfo>();
             if (role == Role.Administrator)
             {
-                 var data = await db.QueryAsync<CustomerInfo>(@"Select 
+                var data = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
 c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
 where c.""IsOld"" = false
 ");
-                if(data!=null) result.AddRange(data);
+                if (data != null) result.AddRange(data);
             }
-            else if(role == Role.Manager)
+            else if (role == Role.Manager)
             {
                 var data1 = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
 c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",
  e.""Name"" as ""EmployeeName"" 
 From ""AgentManage"".Customer c left join  ""AgentManage"".employee e on c.""EmployeeId"" = e.""Id"" 
-where c.""EmployeeId"" in (SELECT ""Id""  FROM ""AgentManage"".employee  WHERE ""Pid""  = @employeeId) and  c.""IsOld"" = false ", new { employeeId});
+where c.""EmployeeId"" in (SELECT ""Id""  FROM ""AgentManage"".employee  WHERE ""Pid""  = @employeeId) and  c.""IsOld"" = false ", new { employeeId });
                 var data2 = await db.QueryAsync<CustomerInfo>(@"Select 
 c.""Id"", c.""CustomerId"", c.""BusinessLicense"", c.""ContactDetail"", c.""Type"", c.""EmployeeId"",
 c.""CreateTime"", c.""UpdateTime"", c.""IsOld"", c.""Informant"", c.""Reviewing"",c.""FollowUp"",c.""Discard"",c.""Version"",

@@ -41,10 +41,10 @@ namespace AgentManage.Controllers
                          new Claim("userId", user.Id.ToString()),
                     };
                     // 获取SecurityKey
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SecurityKey")));
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["SecurityKey"]));
                     var token = new JwtSecurityToken(
-                        issuer: Environment.GetEnvironmentVariable("Issure"),                    // 发布者
-                        audience: Environment.GetEnvironmentVariable("Audience"),                // 接收者
+                        issuer: _configuration["Issure"],                    // 发布者
+                        audience: _configuration["Audience"],                // 接收者
                         notBefore: DateTime.UtcNow,                                                          // token签发时间
                         expires: DateTime.UtcNow.AddDays(30),                                             // token过期时间
                         claims: claims,                                                                   // 该token内存储的自定义字段信息

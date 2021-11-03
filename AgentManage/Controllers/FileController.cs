@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,11 +15,18 @@ namespace AgentManage.Controllers
     [ApiController]
     public class FileController : ControllerBase
     {
-        private readonly string path = Environment.GetEnvironmentVariable("FilePath");
-        [HttpPost]
-        public IActionResult Upload(IFormFile file,string type,string typeName)
+        private readonly string path;
+
+        public IConfiguration Configuration { get; }
+        public FileController(IConfiguration configuration)
         {
-            if(file == null)
+            Configuration = configuration;
+            path = Configuration["FilePath"];
+        }
+        [HttpPost]
+        public IActionResult Upload(IFormFile file, string type, string typeName)
+        {
+            if (file == null)
             {
                 return BadRequest(new { message = "文件为空" });
             }

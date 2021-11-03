@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,14 @@ namespace DataBase.EF
 {
     public class ContractRepository : IContractRepository
     {
-        private readonly string connectString = Environment.GetEnvironmentVariable("DapperConnect");
+        public IConfiguration Configuration { get; }
+        private readonly string connectString;
+
+        public ContractRepository(IConfiguration config)
+        {
+            Configuration = config;
+            connectString = Configuration["DapperConnect"];
+        }
 
         public async Task<List<ContractAll>> GetContractByCustomerId(Guid customerId)
         {

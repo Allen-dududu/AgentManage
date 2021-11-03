@@ -21,6 +21,17 @@ namespace AgentManage
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                    webBuilder.UseUrls("http://localhost:8080/");
+                })
+            .ConfigureAppConfiguration(AddAppConfiguration)
+            ;
+
+        public static void AddAppConfiguration(
+         HostBuilderContext hostingContext,
+         IConfigurationBuilder config)
+        {
+            config.AddJsonFile("appsettings.json", optional: true);
+        }
+
     }
 }
